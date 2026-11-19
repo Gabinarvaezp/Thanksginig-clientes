@@ -328,16 +328,19 @@ function testView(){
   <div class="gcard">
     <div class="eyebrow">Números de prueba</div>
     <div class="gtitle">${items.length} números</div>
-    <div class="gsub">Toque un nombre para quitarlo de la prueba.</div>
+    <div class="gsub">Elija el idioma y toque un nombre para quitarlo de la prueba.</div>
+    <div class="size" id="tLang"><button data-l="es">Español</button><button data-l="en">Inglés</button></div>
     <div class="names" id="gnames"></div>
     <button class="big test" id="gGo"></button>
     <button class="linkbtn" id="tmOff">Ya probé, enviar a clientes</button>
   </div>`;
   const off = new Set(), box = $('gnames');
-  const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar prueba a ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
+  let tl = localStorage.getItem('tg_testlang') || 'es';
+  const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar prueba ${tl==='en'?'en inglés':'en español'} a ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
+  document.querySelectorAll('#tLang button').forEach(b => { b.classList.toggle('on', b.dataset.l === tl); b.onclick = () => { tl = b.dataset.l; localStorage.setItem('tg_testlang', tl); document.querySelectorAll('#tLang button').forEach(x=>x.classList.toggle('on', x===b)); paintGo(); }; });
   items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = p.full[0]; r.children[2].textContent = p.phone;
     r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
-  $('gGo').onclick = () => runBatch(items.filter(p => !off.has(p.key)), 'es');
+  $('gGo').onclick = () => runBatch(items.filter(p => !off.has(p.key)), tl);
   $('tmOff').onclick = () => { if (confirm('¿Salir del modo prueba? Desde ahora los envíos llegan a clientes reales.')) { localStorage.setItem('tg_testmode','0'); paintTM(); groupView(); } };
   paintGo();
 }
