@@ -232,7 +232,8 @@ header h1 em,.gtitle em{font-family:'Crimson Pro',serif;font-style:italic;font-w
       <div class="tabs" id="whoTabs" style="padding:10px 0 0"><button data-w="Jorge">Jorge</button><button data-w="Gabby">Gabby</button></div></div>
     <div class="box"><b>Conexión con Google Sheets</b><br>Pegue aquí el enlace de la Web App. Cada envío se anota solo en la hoja "Envios".
       <input class="search" id="sheetIn" style="margin:10px 0 0;width:100%" placeholder="https://script.google.com/macros/s/…/exec">
-      <div class="hint" id="sheetSt" style="text-align:left;margin-top:8px"></div></div>
+      <div class="hint" id="sheetSt" style="text-align:left;margin-top:8px"></div>
+      <button class="full ghost" id="pushOld">Pasar a la hoja los envíos ya hechos en este celular</button></div>
     <div class="box" id="tmBox"><b>Modo prueba</b><br>Encendido: en Inicio solo aparecen los números de prueba. Nada le llega a clientes.
       <div class="switch"><span id="tmLabel"></span><button id="tmBtn"></button></div></div>
     <div class="box"><b>Registro de enviados</b><br>Descarga un archivo con todos los clientes a los que ya se les envió, con fecha y hora. Se abre en Excel o Google Sheets.
@@ -563,7 +564,7 @@ function runBatch(its, L){
   const real = its.filter(p=>!p.test);
   logToSheet(its, L, real.length ? 'real' : 'prueba');
   if (real.length) {
-    const tk = todayKey(); real.forEach(p => { sent[p.key] = {t: Date.now(), d: tk}; delete skipped[p.key]; });
+    const tk = todayKey(), pu = sheetUrl() ? 1 : 0; real.forEach(p => { sent[p.key] = {t: Date.now(), d: tk, pushed: pu}; delete skipped[p.key]; });
     save('tg_sent', sent); stats();
     setTimeout(() => { groupView(); toast(real.length + ' marcados como enviados', () => { real.forEach(p => delete sent[p.key]); save('tg_sent', sent); stats(); groupView(); }); }, 600);
   } else { setTimeout(() => toast('Prueba enviada a ' + its.length), 600); }
@@ -615,6 +616,14 @@ paintTM(); if (LOCK_TEST) $('tmBox').style.display = 'none';
   const pw = () => document.querySelectorAll('#whoTabs button').forEach(b => b.classList.toggle('on', b.dataset.w === who()));
   document.querySelectorAll('#whoTabs button').forEach(b => b.onclick = () => { localStorage.setItem('tg_who', b.dataset.w); pw(); }); pw();
 })();
+$('pushOld').onclick = () => {
+  if (!sheetUrl()) { toast('Primero pegue el enlace de Google Sheets'); return; }
+  const its = people.filter(p => sent[p.key] && !sent[p.key].remote && !sent[p.key].pushed);
+  if (!its.length) { toast('No hay envíos pendientes por pasar'); return; }
+  ['es','en'].forEach(L => { const g = its.filter(p => (p.lang==='en') === (L==='en')); if (g.length) logToSheet(g, L, 'real'); });
+  its.forEach(p => sent[p.key].pushed = 1); save('tg_sent', sent);
+  toast(its.length + ' envíos pasados a Google Sheets');
+};
 /* registro CSV */
 $('csvBtn').onclick = () => {
   const rows = people.filter(p => sent[p.key]).sort((a,b)=>sent[a.key].t - sent[b.key].t);
