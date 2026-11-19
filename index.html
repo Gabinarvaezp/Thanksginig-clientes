@@ -385,7 +385,7 @@ function stats(){
 }
 function queue(){ return people.filter(p => !sent[p.key] && !skipped[p.key]); }
 
-let gSize = +(localStorage.getItem('tg_gsize') || 20);
+let gSize = +(localStorage.getItem('tg_gsize2') || 30);
 const DAY_LIMIT = 200;
 function groupLang(){ const q = queue(); return q.some(p=>p.lang==='es') ? 'es' : 'en'; }
 function groupList(){ const L = groupLang(); return queue().filter(p=>p.lang===L).slice(0, gSize); }
@@ -430,7 +430,7 @@ function groupView(){
     <div class="eyebrow">Siguiente grupo · ${L==='en'?'Inglés':'Español'}</div>
     <div class="gtitle">${items.length} clientes listos</div>
     <div class="gsub">Cada uno recibe el video y su mensaje por separado. Toque un nombre para quitarlo.</div>
-    <div class="size"><button data-g="10">10</button><button data-g="20">20</button></div>
+    <div class="size"><button data-g="10">10</button><button data-g="20">20</button><button data-g="30">30</button></div>
     ${vidCard(L)}
     <div class="names" id="gnames"></div>
     <button class="big" id="gGo">Enviar a estos ${items.length}</button>
@@ -441,7 +441,7 @@ function groupView(){
   const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar a estos ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
   items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = [...new Set(p.full)].join(' y '); r.children[2].textContent = pretty(p.phone);
     r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
-  stage.querySelectorAll('.size button').forEach(b => { b.classList.toggle('on', +b.dataset.g === gSize); b.onclick = () => { gSize = +b.dataset.g; localStorage.setItem('tg_gsize', gSize); groupView(); }; });
+  stage.querySelectorAll('.size button').forEach(b => { b.classList.toggle('on', +b.dataset.g === gSize); b.onclick = () => { gSize = +b.dataset.g; localStorage.setItem('tg_gsize2', gSize); groupView(); }; });
   $('gGo').onclick = async () => {
     const before = items.filter(p => !off.has(p.key));
     $('gGo').textContent = 'Revisando…';
