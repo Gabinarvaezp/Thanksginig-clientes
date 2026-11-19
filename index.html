@@ -95,6 +95,7 @@ nav button:active{background:#e9e3d8}
 <main><div class="stage" id="stage"><div class="loading">Cargando clientes…</div></div></main>
 
 <nav>
+  <button id="openBatch">Envío rápido</button>
   <button id="openList">Lista</button>
   <button id="openSent">Enviados</button>
   <button id="openSet">Ajustes</button>
@@ -115,16 +116,48 @@ nav button:active{background:#e9e3d8}
     <div class="box"><b>Probar con otro número</b><br>Envía el video a cualquier número sin marcar a nadie.
       <input class="search" id="testNum" style="margin:10px 0 0;width:100%" inputmode="tel" placeholder="+57 319 305 9563" value="+57 319 305 9563">
       <button class="full" id="testBtn">Enviar prueba</button></div>
+    <div class="box"><b>Atajo para Envío rápido</b><br>En la app Atajos crea uno llamado <b>Gracias Lote</b>:<br>
+      1. <b>Obtener archivo</b> GraciasATi.mp4 (carpeta Shortcuts de iCloud), sin selector.<br>
+      2. <b>Dividir texto</b>: Entrada del atajo, separador personalizado <b>@@@</b>.<br>
+      3. <b>Repetir con cada</b> elemento del texto dividido:<br>
+      &nbsp;&nbsp;· <b>Dividir texto</b>: Elemento de repetición, separador <b>|||</b><br>
+      &nbsp;&nbsp;· <b>Obtener elemento</b>: Primero → variable <b>Numero</b><br>
+      &nbsp;&nbsp;· <b>Obtener elemento</b>: Último → variable <b>Mensaje</b><br>
+      &nbsp;&nbsp;· <b>Enviar mensaje</b>: Archivo a Numero<br>
+      &nbsp;&nbsp;· <b>Enviar mensaje</b>: Mensaje a Numero<br>
+      &nbsp;&nbsp;· <b>Esperar</b> 3 segundos<br>
+      En los dos "Enviar mensaje" desactiva <b>Mostrar al ejecutar</b>.
+      <a class="full" style="display:block;text-align:center;text-decoration:none;border-radius:12px;padding:13px;margin-top:10px;background:#fff;color:#1F4A3A;font-weight:600;border:1px solid #E2DCCF" href="GraciasATi.mp4" download>Descargar video para Atajos</a></div>
     <div class="box"><b>Volver a empezar</b><br>Borra las marcas de enviados en este teléfono.
       <button class="full ghost" id="resetBtn">Reiniciar progreso</button></div>
+  </div>
+</div>
+<div class="sheet" id="sheetBatch">
+  <div class="sheet-h"><h3>Envío rápido</h3><button data-close>Cerrar</button></div>
+  <div class="set">
+    <div class="box">Envía el video y el mensaje a varios clientes con un toque, <b>cada uno por separado</b>. Necesita el atajo <b>Gracias Lote</b> en el iPhone (ver Ajustes).
+      <div class="tabs" style="padding:12px 0 0"><button data-n="5">5</button><button data-n="10" class="on">10</button><button data-n="20">20</button></div>
+    </div>
+    <button class="full" id="batchGo" style="margin:0 0 10px;background:#C43E2A;padding:16px;font-size:16px">Enviar</button>
+    <div id="batchRows"></div>
+  </div>
+</div>
+<div class="sheet" id="sheetConfirm">
+  <div class="sheet-h"><h3>¿Se enviaron?</h3></div>
+  <div class="set">
+    <div class="box" id="confirmTxt"></div>
+    <button class="full" id="confYes">Sí, marcarlos como enviados</button>
+    <button class="full ghost" id="confNo">No, dejarlos pendientes</button>
   </div>
 </div>
 <div id="toast"><span id="toastTxt"></span><button id="toastBtn" style="display:none">Deshacer</button></div>
 
 <script>
 const MSG = {
-  es: n => `Hola${n?' '+n:''}, quiero agradecerte por confiar en mí y en mis servicios. Sabes que siempre estoy a tu servicio para lo que necesites.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`,
-  en: n => `Hi${n?' '+n:''}, I want to thank you for trusting me and my services. You know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
+  es: (n, pl) => pl
+    ? `Hola${n?' '+n:''}, quiero agradecerles por confiar en mí y en mis servicios. Saben que siempre estoy a su servicio para lo que necesiten.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`
+    : `Hola${n?' '+n:''}, quiero agradecerle por confiar en mí y en mis servicios. Sabe que siempre estoy a su servicio para lo que necesite.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`,
+  en: (n, pl) => `Hi${n?' '+n:''}, I want to thank you for trusting me and my services. You know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
 };
 const SEND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>';
 const LS = k => { try { return JSON.parse(localStorage.getItem(k) || '{}') } catch(e){ return {} } };
@@ -132,7 +165,7 @@ const save = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch
 let people = [], videoFile = null, cur = null, tab = 'pend';
 const sent = LS('tg_sent');
 for (const k in sent) if (typeof sent[k] !== 'object') sent[k] = {t: sent[k] || 0, d: ''};
-const skipped = LS('tg_skip'), edits = LS('tg_edits');
+const skipped = LS('tg_skip'), edits = LS('tg_edits2');
 
 const $ = id => document.getElementById(id);
 function digits(p){return (p||'').replace(/\D/g,'')}
@@ -140,9 +173,29 @@ function e164(p){let d=digits(p);if(d.length===10)d='1'+d;return d?'+'+d:''}
 function pretty(p){let d=digits(p);if(d.length===11&&d[0]==='1')d=d.slice(1);if(d.length===10)return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;return p}
 function cap(w){return w.toLowerCase().replace(/(^|[\s-])(\S)/g,(a,b,c)=>b+c.toUpperCase())}
 function first(n){return cap((n||'').trim().split(/\s+/)[0]||'')}
-function joinNames(ns){const u=[...new Set(ns)];return u.length<=1?(u[0]||''):u.slice(0,-1).join(', ')+' y '+u[u.length-1]}
+function joinList(u, and){return u.length<=1?(u[0]||''):u.slice(0,-1).join(', ')+' '+and+' '+u[u.length-1]}
+function people_of(p){return p.ppl||[]}
+function shortName(full){const w=full.split(/\s+/);return w.length>1?w[0]+' '+w[w.length>2?w.length-2:1]:w[0]}
+const PART=/^(de|del|la|las|los|y)$/i;
+function famName(ps){
+  const firstW = new Set(ps.map(x=>x.full.split(/\s+/)[0].toLowerCase()));
+  const cnt = new Map(), order = [];
+  ps.forEach(x => new Set(x.full.split(/\s+/).slice(1).filter(w=>w.replace('.','').length>1&&!PART.test(w))).forEach(w => { const k=w.toLowerCase(); if(!cnt.has(k)){cnt.set(k,0);order.push(w)} cnt.set(k,cnt.get(k)+1) }));
+  let best='', bc=0; order.forEach(w=>{const c=cnt.get(w.toLowerCase()); if(c>bc){bc=c;best=w}});
+  return bc>1 ? best : (order.find(w=>!firstW.has(w.toLowerCase())) || '');
+}
+function namesOf(p, lang){
+  const ps = people_of(p); const firsts = ps.map(x=>x.first);
+  if (new Set(firsts.map(f=>f.toLowerCase())).size < firsts.length) {
+    const sn = famName(ps);
+    if (sn) return lang==='en' ? `${sn} family` : `familia ${sn}`;
+  }
+  return joinList(firsts, lang==='en'?'and':'y');
+}
+function joinNames(p){return namesOf(p, p.lang)}
+function isPlural(p){return people_of(p).length > 1}
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
-function msgFor(p){return edits[p.key] || MSG[p.lang](joinNames(p.names))}
+function msgFor(p){return edits[p.key] || MSG[p.lang](joinNames(p), isPlural(p))}
 
 let tTimer;
 function toast(txt, undo){
@@ -166,9 +219,10 @@ async function loadClients(){
     const d = digits(c.phone); if (d.length < 10) return;
     const k = d.slice(-10);
     if (!map.has(k)) map.set(k, {key:k, names:[], full:[], phone:c.phone, lang: c.lang === 'en' ? 'en' : 'es'});
-    const p = map.get(k); p.names.push(first(c.name)); p.full.push(cap(c.name||''));
+    const p = map.get(k); const fn = cap((c.name||'').trim().replace(/\s+/g,' '));
+    p.ppl = p.ppl || []; if (fn && !p.ppl.some(x=>x.full.toLowerCase()===fn.toLowerCase())) { p.ppl.push({first:first(fn), full:fn}); p.names.push(first(fn)); p.full.push(fn); }
   });
-  people = [...map.values()].sort((a,b)=>a.names[0].localeCompare(b.names[0]));
+  people = [...map.values()].filter(p=>p.ppl&&p.ppl.length).sort((a,b)=>a.names[0].localeCompare(b.names[0]));
   stats(); next();
 }
 async function loadVideo(){
@@ -206,21 +260,21 @@ function next(pick){
     <div class="sub"><button id="skip">Saltar</button><button id="mark">Ya lo envié</button></div>
     <div class="hint">Elige <b>Mensajes</b> y pega el número en <b>Para:</b></div>
   </div>`;
-  stage.querySelector('.who').textContent = joinNames(cur.names);
+  stage.querySelector('.who').textContent = joinNames(cur);
   stage.querySelector('.fulln').textContent = [...new Set(cur.full)].join(' · ');
   stage.querySelector('.phone span').textContent = pretty(cur.phone);
   const msg = $('msg'); msg.textContent = msgFor(cur);
-  msg.addEventListener('input', () => { edits[cur.key] = msg.innerText; save('tg_edits', edits); });
+  msg.addEventListener('input', () => { edits[cur.key] = msg.innerText; save('tg_edits2', edits); });
   requestAnimationFrame(()=>requestAnimationFrame(()=>$('card').classList.remove('in')));
   $('send').onclick = () => share(cur, msg.innerText, true);
-  $('skip').onclick = () => { skipped[cur.key] = 1; save('tg_skip', skipped); const p = cur; advance(); toast('Saltado: ' + joinNames(p.names), () => { delete skipped[p.key]; save('tg_skip', skipped); next(p); }); };
+  $('skip').onclick = () => { skipped[cur.key] = 1; save('tg_skip', skipped); const p = cur; advance(); toast('Saltado: ' + joinNames(p), () => { delete skipped[p.key]; save('tg_skip', skipped); next(p); }); };
   $('mark').onclick = () => markSent(cur);
 }
 function advance(){ const c = $('card'); if (c) { c.classList.add('out'); setTimeout(()=>next(), 300); } else next(); }
 function markSent(p){
   sent[p.key] = {t: Date.now(), d: todayKey()}; delete skipped[p.key];
   save('tg_sent', sent); save('tg_skip', skipped); stats(); advance();
-  toast('Enviado a ' + joinNames(p.names), () => { delete sent[p.key]; save('tg_sent', sent); stats(); next(p); });
+  toast('Enviado a ' + joinNames(p), () => { delete sent[p.key]; save('tg_sent', sent); stats(); next(p); });
 }
 async function share(p, text, mark){
   const num = e164(p.phone);
@@ -253,7 +307,7 @@ function rows(){
   items.slice(0, 150).forEach(p => {
     const r = document.createElement('div'); r.className = 'r';
     r.innerHTML = `${tab==='sent'?'<div class="ok">✓</div>':''}<div class="n"><b></b><span></span></div><button></button>`;
-    r.querySelector('b').textContent = joinNames(p.names);
+    r.querySelector('b').textContent = joinNames(p);
     r.querySelector('span').textContent = pretty(p.phone);
     const b = r.querySelector('button');
     if (tab==='sent') { b.textContent = 'Desmarcar'; b.onclick = () => { delete sent[p.key]; save('tg_sent', sent); stats(); rows(); if(!cur) next(); }; }
@@ -262,10 +316,38 @@ function rows(){
   });
   if (items.length > 150) { const m = document.createElement('div'); m.className='hint'; m.textContent = `Mostrando 150 de ${items.length}. Usa el buscador.`; box.appendChild(m); }
 }
-$('testBtn').onclick = () => share({phone: $('testNum').value, key:'test'}, MSG.es(''), false);
+$('testBtn').onclick = () => share({phone: $('testNum').value, key:'test'}, MSG.es('', false), false);
 $('resetBtn').onclick = () => { if (confirm('¿Borrar todas las marcas de enviados y saltados?')) { for (const k in sent) delete sent[k]; for (const k in skipped) delete skipped[k]; save('tg_sent', sent); save('tg_skip', skipped); stats(); next(); closeSheets(); } };
 
-loadVideo(); loadClients();
+/* envío rápido */
+let batchN = 10;
+function batchList(){ return queue().slice(0, batchN); }
+function renderBatch(){
+  const box = $('batchRows'); box.innerHTML = '';
+  const items = batchList();
+  items.forEach(p => { const r = document.createElement('div'); r.className = 'r'; r.innerHTML = '<div class="n"><b></b><span></span></div>'; r.querySelector('b').textContent = joinNames(p); r.querySelector('span').textContent = pretty(p.phone); box.appendChild(r); });
+  $('batchGo').textContent = items.length ? `Enviar a estos ${items.length}` : 'No hay pendientes';
+}
+document.querySelectorAll('#sheetBatch .tabs button').forEach(b => b.onclick = () => { batchN = +b.dataset.n; document.querySelectorAll('#sheetBatch .tabs button').forEach(x=>x.classList.toggle('on', x===b)); renderBatch(); });
+$('openBatch').onclick = () => { renderBatch(); openSheet('sheetBatch'); };
+$('batchGo').onclick = () => {
+  const items = batchList(); if (!items.length) return;
+  const payload = items.map(p => e164(p.phone) + '|||' + msgFor(p)).join('@@@');
+  save('tg_pending', items.map(p=>p.key));
+  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent('Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
+};
+function checkPending(){
+  let pend = []; try { pend = JSON.parse(localStorage.getItem('tg_pending') || '[]'); } catch(e){}
+  if (!pend.length || document.hidden) return;
+  $('confirmTxt').textContent = `Se abrió el atajo para ${pend.length} clientes. ¿Se enviaron bien?`;
+  closeSheets(); openSheet('sheetConfirm');
+}
+$('confYes').onclick = () => { let pend = JSON.parse(localStorage.getItem('tg_pending') || '[]'); const tk = todayKey();
+  pend.forEach(k => { sent[k] = {t: Date.now(), d: tk}; delete skipped[k]; }); save('tg_sent', sent); save('tg_skip', skipped); localStorage.removeItem('tg_pending'); closeSheets(); stats(); next(); toast(pend.length + ' clientes marcados como enviados'); };
+$('confNo').onclick = () => { localStorage.removeItem('tg_pending'); closeSheets(); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(checkPending, 400); });
+
+loadVideo(); loadClients().then(()=>setTimeout(checkPending,300));
 </script>
 </body>
 </html>
