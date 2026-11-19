@@ -153,6 +153,46 @@ header h1 em{font-family:'Crimson Pro',serif;font-weight:500;color:var(--mint);f
 .av{width:36px;height:36px;border-radius:50%;background:var(--mint);color:var(--pine);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none}
 .names div:not(.sel) .av{background:var(--line);color:var(--muted)}
 .loading{text-align:center;color:var(--muted);padding:60px 0}
+
+/* ---- marca ---- */
+body{background:var(--paper)}
+header{border-radius:0}
+.tmchip{background:var(--tomato);color:#fff;letter-spacing:.06em}
+.tiles div{background:transparent;border-left:1px solid rgba(255,255,255,.18);border-radius:0;padding:4px 8px}
+.tiles div:first-child{border-left:0}
+.tiles b{font-size:28px}
+header h1 em,.gtitle em{font-family:'Crimson Pro',serif;font-style:italic;font-weight:500}
+.gcard{border-radius:16px;box-shadow:none;border:1px solid var(--line)}
+.eyebrow{color:var(--tomato);letter-spacing:.1em}
+.gtitle{font-weight:700;font-size:24px}
+.vid{border-radius:12px;background:var(--paper);border:1px solid var(--line)}
+.names{border-top:0}
+.names div{border-bottom:1px solid var(--line)}
+.ck{border-radius:6px}
+.big{border-radius:14px;box-shadow:none}
+.size button{border-radius:10px}
+.size button.on{background:var(--pine)}
+.tabbar{box-shadow:none}
+.tabbar button{border-radius:0;position:relative;color:#8a948f}
+.tabbar button.on{background:transparent;color:var(--pine)}
+.tabbar button.on::before{content:'';position:absolute;top:-9px;left:28%;right:28%;height:3px;border-radius:3px;background:var(--tomato)}
+.plan{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.plan-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.plan-t{font-size:20px;font-weight:600;color:var(--ink);margin-top:2px}
+.plan-t b{color:var(--pine);font-size:24px}
+.plan-d{text-align:right;display:flex;align-items:center;gap:8px}
+.plan-d b{font-family:'Crimson Pro',serif;font-style:italic;font-weight:500;font-size:40px;color:var(--tomato);line-height:1}
+.plan-d span{font-size:12px;line-height:1.2;color:var(--muted);text-align:left}
+.pdays{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px}
+.pd{border-radius:10px;background:var(--paper);text-align:center;padding:7px 2px;display:flex;flex-direction:column;line-height:1.15}
+.pd span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.pd b{font-size:17px;color:var(--ink)}
+.pd i{font-style:normal;font-size:12px;color:var(--muted)}
+.pd.hoy{background:var(--pine)}.pd.hoy span,.pd.hoy b,.pd.hoy i{color:var(--paper)}
+.pd.ok{background:var(--mint)}
+.pd.tarde i{color:var(--tomato);font-weight:700}
+.r{border-radius:12px}
+.sheet{border-radius:18px 18px 0 0}
 </style>
 </head>
 <body>
@@ -188,6 +228,11 @@ header h1 em{font-family:'Crimson Pro',serif;font-weight:500;color:var(--mint);f
   <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
   <div class="set">
     <div class="box"><b>Cómo funciona</b><br>1. En <b>Inicio</b> toque <b>Enviar a estos 20</b>.<br>2. El iPhone manda solo el video y el mensaje a cada cliente.<br>3. Vuelva a esta página y toque <b>Sí, ya se enviaron</b>.<br>4. Aparecen los siguientes 20. Repita hasta unos 200 por día.</div>
+    <div class="box"><b>Quién envía</b><br>Queda anotado en el registro de Google Sheets.
+      <div class="tabs" id="whoTabs" style="padding:10px 0 0"><button data-w="Jorge">Jorge</button><button data-w="Gabby">Gabby</button></div></div>
+    <div class="box"><b>Conexión con Google Sheets</b><br>Pegue aquí el enlace de la Web App. Cada envío se anota solo en la hoja "Envios".
+      <input class="search" id="sheetIn" style="margin:10px 0 0;width:100%" placeholder="https://script.google.com/macros/s/…/exec">
+      <div class="hint" id="sheetSt" style="text-align:left;margin-top:8px"></div></div>
     <div class="box" id="tmBox"><b>Modo prueba</b><br>Encendido: en Inicio solo aparecen los números de prueba. Nada le llega a clientes.
       <div class="switch"><span id="tmLabel"></span><button id="tmBtn"></button></div></div>
     <div class="box"><b>Registro de enviados</b><br>Descarga un archivo con todos los clientes a los que ya se les envió, con fecha y hora. Se abre en Excel o Google Sheets.
@@ -352,7 +397,7 @@ function initials(n){ return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]
 function testView(){
   const stage = $('stage'), items = testContacts();
   let tl = localStorage.getItem('tg_testlang') || 'es';
-  stage.innerHTML = `<div class="gcard">
+  stage.innerHTML = planCard() + `<div class="gcard">
     <div class="eyebrow">Prueba</div>
     <div class="gtitle">Enviar a los números de prueba</div>
     <div class="gsub">Ningún cliente recibe nada mientras esté en modo prueba.</div>
@@ -364,7 +409,7 @@ function testView(){
   const off = new Set(), box = $('gnames');
   const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar prueba a ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; $('vidBox').innerHTML = vidCard(tl); $('vidCard').onclick = () => { $('openSet').click(); }; };
   document.querySelectorAll('#tLang button').forEach(b => { b.classList.toggle('on', b.dataset.l === tl); b.onclick = () => { tl = b.dataset.l; localStorage.setItem('tg_testlang', tl); document.querySelectorAll('#tLang button').forEach(x=>x.classList.toggle('on', x===b)); paintGo(); }; });
-  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="av"></span><span class="nm"></span><span></span>'; r.children[1].textContent = initials(p.full[0]); r.children[2].textContent = p.full[0]; r.children[3].textContent = p.phone;
+  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = p.full[0]; r.children[2].textContent = p.phone;
     r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
   $('gGo').onclick = () => runBatch(items.filter(p => !off.has(p.key)), tl);
   paintGo();
@@ -380,7 +425,7 @@ function groupView(){
   }
   const L = groupLang(), tk = todayKey();
   const today = Object.values(sent).filter(v => v && v.d === tk).length;
-  stage.innerHTML = `<div class="gcard">
+  stage.innerHTML = planCard() + `<div class="gcard">
     <div class="eyebrow">Siguiente grupo · ${L==='en'?'Inglés':'Español'}</div>
     <div class="gtitle">${items.length} clientes listos</div>
     <div class="gsub">Cada uno recibe el video y su mensaje por separado. Toque un nombre para quitarlo.</div>
@@ -388,12 +433,12 @@ function groupView(){
     ${vidCard(L)}
     <div class="names" id="gnames"></div>
     <button class="big" id="gGo">Enviar a estos ${items.length}</button>
-    <div class="limit">Hoy lleva <b>${today}</b> de ${DAY_LIMIT} recomendados</div>
+    
   </div>`;
   const box = $('gnames');
   const off = new Set();
   const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar a estos ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
-  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="av"></span><span class="nm"></span><span></span>'; r.children[1].textContent = initials(p.full[0]); r.children[2].textContent = [...new Set(p.full)].join(' y '); r.children[3].textContent = pretty(p.phone);
+  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = [...new Set(p.full)].join(' y '); r.children[2].textContent = pretty(p.phone);
     r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
   stage.querySelectorAll('.size button').forEach(b => { b.classList.toggle('on', +b.dataset.g === gSize); b.onclick = () => { gSize = +b.dataset.g; localStorage.setItem('tg_gsize', gSize); groupView(); }; });
   $('gGo').onclick = () => {
@@ -493,10 +538,35 @@ $('testBtn').onclick = () => share({phone: $('testNum').value, key:'test', lang:
 $('resetBtn').onclick = () => { if (confirm('¿Borrar todas las marcas de enviados y saltados?')) { for (const k in sent) delete sent[k]; for (const k in skipped) delete skipped[k]; save('tg_sent', sent); save('tg_skip', skipped); stats(); next(); closeSheets(); } };
 
 /* envío por lote y selección */
+const SHEET_URL_DEFAULT = '';
+function sheetUrl(){ return (localStorage.getItem('tg_sheet') || SHEET_URL_DEFAULT).trim(); }
+function who(){ return localStorage.getItem('tg_who') || 'Jorge'; }
+function logToSheet(its, L, mode){
+  const url = sheetUrl(); if (!url) return;
+  const rows = its.map(p => ({ key: p.test ? digits(p.phone) : p.key, names: p.test ? (p.tname || 'Prueba') : [...new Set(p.full)].join(' y '), phone: pretty(p.phone), lang: L==='en'?'Inglés':'Español', msg: p.test ? MSG[L](p.tname||'', false) : msgFor(p) }));
+  const body = JSON.stringify({ rows, mode, device: who() });
+  try { if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], {type:'text/plain'}))) return; } catch(e){}
+  fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body }).catch(()=>{});
+}
+async function syncFromSheet(){
+  const url = sheetUrl(); if (!url) return;
+  try {
+    const r = await (await fetch(url)).json();
+    let n = 0;
+    (r.enviados || []).forEach(x => { const k = String(x.k).replace(/\D/g,'').slice(-10); if (k && !sent[k] && people.some(p=>p.key===k)) { sent[k] = {t: Date.now(), d: '', remote: 1}; n++; } });
+    if (n) { save('tg_sent', sent); stats(); if (!cur) groupView(); }
+  } catch(e){}
+}
 function runBatch(its, L){
   if (!its.length) return;
   const payload = its.map(p => e164(p.phone) + '|||' + (p.test ? MSG[L](p.tname||'', false) : msgFor(p))).join('@@@');
-  save('tg_pending', its.filter(p=>!p.test).map(p=>p.key));
+  const real = its.filter(p=>!p.test);
+  logToSheet(its, L, real.length ? 'real' : 'prueba');
+  if (real.length) {
+    const tk = todayKey(); real.forEach(p => { sent[p.key] = {t: Date.now(), d: tk}; delete skipped[p.key]; });
+    save('tg_sent', sent); stats();
+    setTimeout(() => { groupView(); toast(real.length + ' marcados como enviados', () => { real.forEach(p => delete sent[p.key]); save('tg_sent', sent); stats(); groupView(); }); }, 600);
+  } else { setTimeout(() => toast('Prueba enviada a ' + its.length), 600); }
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(L === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
 }
 const selected = new Map();
@@ -537,6 +607,14 @@ $('sureNo').onclick = () => closeSheets();
 function paintTM(){ const on = testMode(); $('tmBtn').classList.toggle('on', on); $('tmLabel').textContent = on ? 'Encendido' : 'Apagado'; }
 $('tmBtn').onclick = () => { localStorage.setItem('tg_testmode', testMode() ? '0' : '1'); paintTM(); groupView(); };
 paintTM(); if (LOCK_TEST) $('tmBox').style.display = 'none';
+/* sheets + quién */
+(function(){
+  const inp = $('sheetIn'); inp.value = sheetUrl();
+  const st = () => $('sheetSt').textContent = sheetUrl() ? 'Conectado: los envíos se anotan en Google Sheets.' : 'Sin conectar todavía.';
+  inp.addEventListener('change', () => { localStorage.setItem('tg_sheet', inp.value.trim()); st(); syncFromSheet(); }); st();
+  const pw = () => document.querySelectorAll('#whoTabs button').forEach(b => b.classList.toggle('on', b.dataset.w === who()));
+  document.querySelectorAll('#whoTabs button').forEach(b => b.onclick = () => { localStorage.setItem('tg_who', b.dataset.w); pw(); }); pw();
+})();
 /* registro CSV */
 $('csvBtn').onclick = () => {
   const rows = people.filter(p => sent[p.key]).sort((a,b)=>sent[a.key].t - sent[b.key].t);
@@ -548,6 +626,23 @@ $('csvBtn').onclick = () => {
   const blob = new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Registro_AccionDeGracias_' + todayKey() + '.csv'; document.body.appendChild(a); a.click(); a.remove();
 };
+
+/* plan de Jorge */
+const PLAN_START = new Date(2026,10,19), PLAN_DAYS = 7, PLAN_META = 145, TG_DAY = new Date(2026,10,26);
+function planCard(){
+  const now = new Date(); const tk = todayKey(); const cells = [];
+  const dn = ['dom','lun','mar','mié','jue','vie','sáb'];
+  for (let i = 0; i < PLAN_DAYS; i++) {
+    const d = new Date(PLAN_START); d.setDate(d.getDate() + i);
+    const k = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    const n = Object.values(sent).filter(v => v && v.d === k).length;
+    const cls = n >= PLAN_META ? 'ok' : (k === tk ? 'hoy' : (d < now ? 'tarde' : ''));
+    cells.push(`<div class="pd ${cls}"><span>${dn[d.getDay()]}</span><b>${d.getDate()}</b><i>${n}</i></div>`);
+  }
+  const today = Object.values(sent).filter(v => v && v.d === tk).length;
+  const left = Math.max(0, Math.ceil((TG_DAY - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5));
+  return `<div class="plan"><div class="plan-h"><div><div class="eyebrow">Plan de Jorge</div><div class="plan-t">Hoy: <b>${today}</b> de ${PLAN_META}</div></div><div class="plan-d"><b>${left}</b><span>días para<br>Acción de Gracias</span></div></div><div class="pdays">${cells.join('')}</div></div>`;
+}
 
 /* envío rápido */
 let batchN = 10, batchLang = 'es', testLang = 'es';
@@ -578,7 +673,7 @@ function checkPending(){
 $('confYes').onclick = () => {  let pend = JSON.parse(localStorage.getItem('tg_pending') || '[]'); const tk = todayKey();
   pend.forEach(k => { sent[k] = {t: Date.now(), d: tk}; delete skipped[k]; }); save('tg_sent', sent); save('tg_skip', skipped); localStorage.removeItem('tg_pending'); closeSheets(); stats(); next(); toast(pend.length + ' clientes marcados como enviados'); };
 $('confNo').onclick = () => { localStorage.removeItem('tg_pending'); closeSheets(); };
-document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(checkPending, 400); });
+
 
 try { const tn = localStorage.getItem('tg_testnums3'); if (tn) $('testBatch').value = tn; } catch(e){}
 $('testBatch').addEventListener('input', () => localStorage.setItem('tg_testnums3', $('testBatch').value));
@@ -593,12 +688,12 @@ $('testBatchBtn').onclick = () => {
 function mode(){ return localStorage.getItem('tg_mode') || 'atajo'; }
 let pendingOne = null;
 function viaShortcut(p, text){
-  pendingOne = p.key;
+  logToSheet([p], p.lang, 'real'); setTimeout(() => markSent(p), 600);
   const name = p.lang === 'en' ? 'Thanks Lote' : 'Gracias Lote';
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(name) + '&input=text&text=' + encodeURIComponent(e164(p.phone) + '|||' + text);
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden || !pendingOne) return;
+  if (true) return;
   const p = people.find(x => x.key === pendingOne); pendingOne = null;
   if (p) setTimeout(() => markSent(p), 350);
 });
@@ -606,7 +701,8 @@ function paintMode(){ document.querySelectorAll('#modeTabs button').forEach(b =>
 document.querySelectorAll('#modeTabs button').forEach(b => b.onclick = () => { localStorage.setItem('tg_mode', b.dataset.m); paintMode(); if (cur) next(cur); });
 paintMode();
 
-loadVideo(); loadClients().then(()=>setTimeout(checkPending,300));
+loadVideo(); loadClients().then(()=>syncFromSheet());
+document.addEventListener('visibilitychange', () => { if (!document.hidden) syncFromSheet(); });
 </script>
 </body>
 </html>
