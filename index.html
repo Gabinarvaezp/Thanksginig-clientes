@@ -118,6 +118,12 @@ nav button:active{background:#e9e3d8}
       <input class="search" id="testNum" style="margin:10px 0 0;width:100%" inputmode="tel" placeholder="+57 319 305 9563" value="+57 319 305 9563">
       <div class="tabs" id="testTabs" style="padding:10px 0 0"><button data-l="es" class="on">Español</button><button data-l="en">Inglés</button></div>
       <button class="full" id="testBtn">Enviar prueba</button></div>
+    <div class="box"><b>Prueba de envío rápido</b><br>Un número por línea. Usa el idioma elegido arriba y no marca a ningún cliente.
+      <textarea id="testBatch" class="search" style="margin:10px 0 0;width:100%;min-height:110px;font-size:15px">+57 319 305 9563
++57 301 691 5294
++57 300 847 9734
++57 320 990 0746</textarea>
+      <button class="full" id="testBatchBtn">Probar envío rápido</button></div>
     <div class="box"><b>Atajo para Envío rápido</b><br>En la app Atajos crea uno llamado <b>Gracias Lote</b>:<br>
       1. <b>Obtener archivo</b> GraciasATi.mp4 (carpeta Shortcuts de iCloud), sin selector.<br>
       2. <b>Dividir texto</b>: Entrada del atajo, separador personalizado <b>@@@</b>.<br>
@@ -353,6 +359,13 @@ $('confYes').onclick = () => { let pend = JSON.parse(localStorage.getItem('tg_pe
   pend.forEach(k => { sent[k] = {t: Date.now(), d: tk}; delete skipped[k]; }); save('tg_sent', sent); save('tg_skip', skipped); localStorage.removeItem('tg_pending'); closeSheets(); stats(); next(); toast(pend.length + ' clientes marcados como enviados'); };
 $('confNo').onclick = () => { localStorage.removeItem('tg_pending'); closeSheets(); };
 document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(checkPending, 400); });
+
+$('testBatchBtn').onclick = () => {
+  const nums = $('testBatch').value.split(/\n+/).map(x=>x.trim()).filter(x=>digits(x).length>=10).map(x=>'+'+digits(x));
+  if (!nums.length) { toast('Escribe al menos un número'); return; }
+  const payload = nums.map(n => n + '|||' + MSG[testLang]('', false)).join('@@@');
+  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(testLang === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
+};
 
 loadVideo(); loadClients().then(()=>setTimeout(checkPending,300));
 </script>
