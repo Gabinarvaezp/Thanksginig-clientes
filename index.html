@@ -442,7 +442,12 @@ function groupView(){
   items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = [...new Set(p.full)].join(' y '); r.children[2].textContent = pretty(p.phone);
     r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
   stage.querySelectorAll('.size button').forEach(b => { b.classList.toggle('on', +b.dataset.g === gSize); b.onclick = () => { gSize = +b.dataset.g; localStorage.setItem('tg_gsize', gSize); groupView(); }; });
-  $('gGo').onclick = () => {
+  $('gGo').onclick = async () => {
+    const before = items.filter(p => !off.has(p.key));
+    $('gGo').textContent = 'Revisando…';
+    await syncFromSheet(true);
+    if (before.some(p => sent[p.key])) { groupView(); toast('Algunos ya se habían enviado desde otro aparato. La lista se actualizó.'); return; }
+    paintGo();
     if (today >= DAY_LIMIT && !confirm('Ya envió ' + today + ' hoy. Es mejor seguir mañana para no ser marcado como spam. ¿Enviar de todas formas?')) return;
     const its = items.filter(p => !off.has(p.key));
     sure(its, L);
@@ -549,15 +554,23 @@ function logToSheet(its, L, mode){
   try { if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], {type:'text/plain'}))) return; } catch(e){}
   fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body }).catch(()=>{});
 }
-async function syncFromSheet(){
+async function syncFromSheet(quiet){
   const url = sheetUrl(); if (!url) return;
   try {
-    const r = await (await fetch(url)).json();
+    const r = await (await fetch(url, {cache:'no-store'})).json();
     let n = 0;
-    (r.enviados || []).forEach(x => { const k = String(x.k).replace(/\D/g,'').slice(-10); if (k && !sent[k] && people.some(p=>p.key===k)) { sent[k] = {t: Date.now(), d: '', remote: 1}; n++; } });
-    if (n) { save('tg_sent', sent); stats(); if (!cur) groupView(); }
-  } catch(e){}
+    (r.enviados || []).forEach(x => {
+      const k = String(x.k).replace(/\D/g,'').slice(-10);
+      if (!k || sent[k] || !people.some(p=>p.key===k)) return;
+      const m = String(x.f||'').match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+      const d = m ? (+m[1]) + '-' + (+m[2]) + '-' + (+m[3]) : '';
+      sent[k] = {t: Date.now(), d, remote: 1, pushed: 1}; n++;
+    });
+    if (n) { save('tg_sent', sent); stats(); if (!cur && !quiet) groupView(); }
+    return n;
+  } catch(e){ return 0; }
 }
+setInterval(() => { if (!document.hidden) syncFromSheet(); }, 45000);
 function runBatch(its, L){
   if (!its.length) return;
   const payload = its.map(p => e164(p.phone) + '|||' + (p.test ? MSG[L](p.tname||'', false) : msgFor(p))).join('@@@');
