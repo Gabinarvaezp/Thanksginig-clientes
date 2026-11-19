@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acción de Gracias — Jorge Martínez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Crimson+Pro:ital,wght@1,500&display=swap" rel="stylesheet">
+<style>
+:root{--pine:#1F4A3A;--pine-d:#163629;--mint:#B7D4C3;--paper:#F3EFE7;--tomato:#C43E2A;--ink:#1d2a24;--line:#E2DCCF}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Outfit,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:70px}
+header{background:var(--pine);color:var(--paper);padding:26px 20px 22px}
+header h1{margin:0;font-size:24px;font-weight:700;letter-spacing:.2px}
+header h1 em{font-family:'Crimson Pro',serif;font-weight:500;color:var(--mint);font-size:28px}
+header p{margin:6px 0 0;font-size:14px;opacity:.75}
+.bar{height:6px;background:rgba(255,255,255,.15);border-radius:6px;margin-top:16px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--mint);width:0;transition:width .3s}
+.count{font-size:13px;margin-top:6px;opacity:.85}
+.wrap{max-width:620px;margin:0 auto;padding:16px}
+.tools{display:flex;gap:8px;margin-bottom:14px}
+.tools input{flex:1;min-width:0;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:#fff}
+.tools select{padding:0 10px;border:1px solid var(--line);border-radius:12px;font:inherit;background:#fff}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 20px -14px rgba(0,0,0,.25);border:1px solid transparent}
+.card.sent{opacity:.55}
+.card.test{border-color:var(--mint)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.name{font-weight:700;font-size:18px}
+.tel{font-size:14px;opacity:.6;margin-top:2px}
+.tag{font-size:12px;font-weight:600;padding:4px 9px;border-radius:20px;background:var(--paper);color:var(--pine);white-space:nowrap}
+.tag.ok{background:var(--pine);color:var(--paper)}
+textarea{width:100%;margin:12px 0 4px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:15px;line-height:1.4;background:var(--paper);resize:vertical;min-height:150px;color:var(--ink)}
+.row{display:flex;gap:8px;margin-top:8px}
+button{flex:1;border:0;border-radius:12px;padding:14px 10px;font:inherit;font-weight:600;font-size:15px;cursor:pointer}
+.send{background:var(--tomato);color:#fff;flex:2}
+.sms{background:var(--mint);color:var(--pine)}
+.mark{background:var(--paper);color:var(--pine)}
+.help{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;font-size:14px;line-height:1.5}
+.help b{color:var(--pine)}
+.help ol{margin:8px 0 0;padding-left:20px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120px);background:var(--pine);color:var(--paper);padding:12px 18px;border-radius:12px;font-size:14px;max-width:90%;transition:transform .3s;z-index:9;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.more{display:block;width:100%;background:#fff;color:var(--pine);border:1px solid var(--line)}
+video{display:block;height:200px;width:auto;border-radius:12px;margin:12px auto 0;background:#000}
+</style>
+</head>
+<body>
+<header>
+  <h1>Acción de Gracias · <em>clientes</em></h1>
+  <p>Video + mensaje personalizado por mensaje de texto</p>
+  <div class="bar"><i id="prog"></i></div>
+  <div class="count" id="count">Cargando clientes…</div>
+</header>
+<div class="wrap">
+  <div class="help">
+    <b>Cómo enviar</b>
+    <ol>
+      <li>Toca <b>Enviar video + mensaje</b>. El número se copia solo.</li>
+      <li>En el menú que aparece, elige <b>Mensajes</b>. El video y el texto quedan adjuntos.</li>
+      <li>En <b>Para:</b> mantén presionado y <b>Pegar</b> el número. Envía.</li>
+    </ol>
+    <video id="vid" src="GraciasATi.mp4" controls playsinline preload="metadata"></video>
+  </div>
+  <div class="tools">
+    <input id="q" type="search" placeholder="Buscar cliente o teléfono">
+    <select id="f"><option value="pend">Pendientes</option><option value="all">Todos</option><option value="sent">Enviados</option></select>
+  </div>
+  <div id="list"></div>
+  <button class="more" id="more" style="display:none">Ver más</button>
+</div>
+<div id="toast"></div>
+<script>
+const TEST = [{key:'test', names:['Prueba'], phone:'+57 319 305 9563', lang:'es', test:true}];
+const MSG = {
+  es: n => `Hola ${n}, quiero agradecerte por confiar en mí y en mis servicios. Sabes que siempre estoy a tu servicio para lo que necesites.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`,
+  en: n => `Hi ${n}, I want to thank you for trusting me and my services. You know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
+};
+let people = [], videoFile = null, shown = 40;
+const sent = JSON.parse(localStorage.getItem('tg_sent') || '{}');
+const edits = JSON.parse(localStorage.getItem('tg_edits') || '{}');
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),3800)}
+function digits(p){return (p||'').replace(/\D/g,'')}
+function e164(p){let d=digits(p);if(d.length===10)d='1'+d;return d?'+'+d:''}
+function pretty(p){const d=digits(p);if(d.length===10)return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;return p}
+function cap(w){return w.toLowerCase().replace(/(^|[\s-])(\S)/g,(a,b,c)=>b+c.toUpperCase())}
+function first(n){return cap((n||'').trim().split(/\s+/)[0]||'')}
+function joinNames(ns){const u=[...new Set(ns)];return u.length<=1?u[0]||'':u.slice(0,-1).join(', ')+' y '+u[u.length-1]}
+
+async function loadClients(){
+  let list=null;
+  try{const raw=localStorage.getItem('clients');if(raw)list=JSON.parse(raw)}catch(e){}
+  if(!list||!list.length){
+    try{
+      const html=await (await fetch('/ClientWishes/index.html',{cache:'no-store'})).text();
+      const m=html.match(/const SEED\s*=\s*(\[[\s\S]*?\]);\n/);
+      if(m)list=JSON.parse(m[1]);
+    }catch(e){}
+  }
+  list=list||[];
+  const byPhone=new Map();
+  list.forEach(c=>{
+    const d=digits(c.phone); if(d.length<10)return;
+    if(!byPhone.has(d))byPhone.set(d,{key:d,names:[],phone:c.phone,lang:c.lang==='en'?'en':'es'});
+    byPhone.get(d).names.push(first(c.name));
+  });
+  people=[...byPhone.values()].sort((a,b)=>a.names[0].localeCompare(b.names[0]));
+  render();
+}
+
+async function loadVideo(){
+  try{const b=await (await fetch('GraciasATi.mp4')).blob();videoFile=new File([b],'Feliz-Accion-de-Gracias.mp4',{type:'video/mp4'})}catch(e){}
+}
+
+function msgFor(p){
+  if(edits[p.key])return edits[p.key];
+  return MSG[p.lang](joinNames(p.names));
+}
+
+function updateCount(){
+  const total=people.length, n=people.filter(p=>sent[p.key]).length;
+  document.getElementById('count').textContent=`${n} de ${total} enviados`;
+  document.getElementById('prog').style.width=total?(n/total*100)+'%':'0';
+}
+
+function card(p){
+  const el=document.createElement('div');
+  el.className='card'+(sent[p.key]?' sent':'')+(p.test?' test':'');
+  el.innerHTML=`<div class="top"><div><div class="name"></div><div class="tel"></div></div><span class="tag"></span></div>
+  <textarea></textarea>
+  <div class="row"><button class="send">Enviar video + mensaje</button></div>
+  <div class="row"><button class="sms">Solo texto</button><button class="mark"></button></div>`;
+  el.querySelector('.name').textContent=p.test?'Prueba':joinNames(p.names);
+  el.querySelector('.tel').textContent=pretty(p.phone);
+  const tag=el.querySelector('.tag'), mark=el.querySelector('.mark');
+  const paint=()=>{tag.textContent=sent[p.key]?'Enviado':(p.lang==='en'?'Inglés':'Pendiente');tag.className='tag'+(sent[p.key]?' ok':'');mark.textContent=sent[p.key]?'Desmarcar':'Marcar enviado';el.classList.toggle('sent',!!sent[p.key])};
+  paint();
+  const ta=el.querySelector('textarea'); ta.value=msgFor(p);
+  ta.addEventListener('input',()=>{edits[p.key]=ta.value;localStorage.setItem('tg_edits',JSON.stringify(edits))});
+  const setSent=v=>{if(v)sent[p.key]=Date.now();else delete sent[p.key];localStorage.setItem('tg_sent',JSON.stringify(sent));paint();updateCount()};
+  el.querySelector('.send').addEventListener('click',async()=>{
+    const num=e164(p.phone);
+    navigator.clipboard.writeText(num).catch(()=>{});
+    if(!videoFile){toast('El video aún está cargando, intenta de nuevo en unos segundos');return}
+    const data={files:[videoFile],text:ta.value};
+    if(navigator.canShare&&navigator.canShare(data)){
+      try{await navigator.share(data);setSent(true);toast('Listo. Número copiado: '+num)}
+      catch(e){if(e.name!=='AbortError')toast('No se pudo abrir el menú de compartir')}
+    }else{
+      toast('Este navegador no permite adjuntar el video. Abre la página en Safari del iPhone.');
+    }
+  });
+  el.querySelector('.sms').addEventListener('click',()=>{location.href=`sms:${e164(p.phone)}&body=${encodeURIComponent(ta.value)}`;setSent(true)});
+  mark.addEventListener('click',()=>setSent(!sent[p.key]));
+  return el;
+}
+
+function render(){
+  const q=document.getElementById('q').value.trim().toLowerCase(), f=document.getElementById('f').value;
+  const qd=digits(q);
+  const items=people.filter(p=>{
+    if(f==='pend'&&sent[p.key])return false;
+    if(f==='sent'&&!sent[p.key])return false;
+    if(!q)return true;
+    return p.names.join(' ').toLowerCase().includes(q)||(qd&&digits(p.phone).includes(qd));
+  });
+  const list=document.getElementById('list');list.innerHTML='';
+  if(!q)TEST.forEach(t=>list.appendChild(card(t)));
+  items.slice(0,shown).forEach(p=>list.appendChild(card(p)));
+  document.getElementById('more').style.display=items.length>shown?'block':'none';
+  updateCount();
+}
+document.getElementById('q').addEventListener('input',()=>{shown=40;render()});
+document.getElementById('f').addEventListener('change',()=>{shown=40;render()});
+document.getElementById('more').addEventListener('click',()=>{shown+=40;render()});
+loadVideo(); loadClients();
+</script>
+</body>
+</html>
