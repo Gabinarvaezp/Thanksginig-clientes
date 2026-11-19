@@ -136,7 +136,7 @@ nav button:active{background:#e9e3d8}
   <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
   <div class="set">
     <div class="box"><b>Cómo funciona</b><br>1. Toca <b>Enviar</b>. El número se copia solo.<br>2. Elige <b>Mensajes</b>. El video y el texto ya van adjuntos.<br>3. En <b>Para:</b> toca y <b>Pegar</b>. Envía.<br>Al volver, pasa solo al siguiente cliente.</div>
-    <div class="box"><b>Forma de envío</b><br><b>Atajo:</b> el número queda puesto solo (necesita el atajo <b>Gracias Uno</b>). <b>Compartir:</b> sin atajo, hay que pegar el número.
+    <div class="box"><b>Forma de envío</b><br><b>Atajo:</b> el número queda puesto solo (usa el atajo <b>Gracias Lote</b>). <b>Compartir:</b> sin atajo, hay que pegar el número.
       <div class="tabs" id="modeTabs" style="padding:10px 0 0"><button data-m="atajo">Atajo</button><button data-m="compartir">Compartir</button></div></div>
     <div class="box"><b>Video en español</b><video src="GraciasATi.mp4" controls playsinline preload="metadata"></video></div>
     <div class="box"><b>Video en inglés</b><video src="ThankYou.mp4" controls playsinline preload="metadata"></video></div>
@@ -338,7 +338,7 @@ function next(pick){
   const msg = $('msg'); msg.textContent = msgFor(cur);
   msg.addEventListener('input', () => { edits[cur.key] = msg.innerText; save('tg_edits2', edits); });
   requestAnimationFrame(()=>requestAnimationFrame(()=>$('card').classList.remove('in')));
-  $('hint').innerHTML = mode() === 'atajo' ? 'Se abre Mensajes con el número, el video y el texto listos. Solo toca <b>Enviar</b>.' : 'Elige <b>Mensajes</b> y pega el número en <b>Para:</b>';
+  $('hint').innerHTML = mode() === 'atajo' ? 'Se envía solo el video y el mensaje a este cliente.' : 'Elige <b>Mensajes</b> y pega el número en <b>Para:</b>';
   $('send').onclick = () => mode() === 'atajo' ? viaShortcut(cur, msg.innerText) : share(cur, msg.innerText, true);
   $('back').onclick = () => groupView();
   $('mark').onclick = () => markSent(cur);
@@ -470,7 +470,7 @@ function mode(){ return localStorage.getItem('tg_mode') || 'atajo'; }
 let pendingOne = null;
 function viaShortcut(p, text){
   pendingOne = p.key;
-  const name = p.lang === 'en' ? 'Thanks Uno' : 'Gracias Uno';
+  const name = p.lang === 'en' ? 'Thanks Lote' : 'Gracias Lote';
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(name) + '&input=text&text=' + encodeURIComponent(e164(p.phone) + '|||' + text);
 }
 document.addEventListener('visibilitychange', () => {
