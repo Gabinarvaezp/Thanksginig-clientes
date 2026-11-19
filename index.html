@@ -123,6 +123,14 @@ body{font-size:17px}
 .sheet-h button{font-size:16px;padding:10px 14px}
 .set .box{font-size:16px}
 .hint{font-size:15px}
+.testbanner{background:#FFF4D6;border:1.5px solid #E8C770;color:#6b5210;border-radius:16px;padding:14px 16px;margin-bottom:14px;font-size:16px;line-height:1.4}
+.testbanner b{display:block;font-size:18px;color:#5a440a}
+.big.test{background:var(--pine);box-shadow:none}
+.linkbtn{display:block;width:100%;margin-top:12px;border:0;background:transparent;font:inherit;font-size:16px;font-weight:700;color:var(--pine);text-decoration:underline;padding:8px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.switch button{border:0;border-radius:30px;width:64px;height:36px;background:var(--line);position:relative}
+.switch button::after{content:'';position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch button.on{background:#2f9e5b}.switch button.on::after{left:32px}
 .loading{text-align:center;color:var(--muted);padding:60px 0}
 </style>
 </head>
@@ -158,6 +166,10 @@ body{font-size:17px}
   <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
   <div class="set">
     <div class="box"><b>Cómo funciona</b><br>1. En <b>Inicio</b> toque <b>Enviar a estos 20</b>.<br>2. El iPhone manda solo el video y el mensaje a cada cliente.<br>3. Vuelva a esta página y toque <b>Sí, ya se enviaron</b>.<br>4. Aparecen los siguientes 20. Repita hasta unos 200 por día.</div>
+    <div class="box"><b>Modo prueba</b><br>Encendido: en Inicio solo aparecen los números de prueba. Nada le llega a clientes.
+      <div class="switch"><span id="tmLabel"></span><button id="tmBtn"></button></div></div>
+    <div class="box"><b>Registro de enviados</b><br>Descarga un archivo con todos los clientes a los que ya se les envió, con fecha y hora. Se abre en Excel o Google Sheets.
+      <button class="full" id="csvBtn">Descargar registro</button></div>
     <div class="box"><b>Forma de envío</b><br><b>Atajo:</b> el número queda puesto solo (usa el atajo <b>Gracias Lote</b>). <b>Compartir:</b> sin atajo, hay que pegar el número.
       <div class="tabs" id="modeTabs" style="padding:10px 0 0"><button data-m="atajo">Atajo</button><button data-m="compartir">Compartir</button></div></div>
     <div class="box"><b>Video en español</b><video src="GraciasATi.mp4" controls playsinline preload="metadata"></video></div>
@@ -206,6 +218,14 @@ Pao +57 300 645 1663</textarea>
     <div class="box" id="confirmTxt"></div>
     <button class="full" id="confYes">Sí, ya se enviaron</button>
     <button class="full ghost" id="confNo">No, volver a intentar</button>
+  </div>
+</div>
+<div class="sheet" id="sheetSure">
+  <div class="sheet-h"><h3>¿Enviar a clientes?</h3></div>
+  <div class="set">
+    <div class="box" id="sureTxt"></div>
+    <button class="full" id="sureYes" style="background:#C43E2A;padding:18px;font-size:18px">Sí, enviar</button>
+    <button class="full ghost" id="sureNo" style="padding:16px;font-size:17px">Cancelar</button>
   </div>
 </div>
 <div id="toast"><span id="toastTxt"></span><button id="toastBtn" style="display:none">Deshacer</button></div>
@@ -301,8 +321,29 @@ let gSize = +(localStorage.getItem('tg_gsize') || 20);
 const DAY_LIMIT = 200;
 function groupLang(){ const q = queue(); return q.some(p=>p.lang==='es') ? 'es' : 'en'; }
 function groupList(){ const L = groupLang(); return queue().filter(p=>p.lang===L).slice(0, gSize); }
+function testMode(){ return localStorage.getItem('tg_testmode') !== '0'; }
+function testView(){
+  const stage = $('stage'), items = testContacts();
+  stage.innerHTML = `<div class="testbanner"><b>Modo prueba</b>Solo se envía a los números de prueba. Ningún cliente recibe nada.</div>
+  <div class="gcard">
+    <div class="eyebrow">Números de prueba</div>
+    <div class="gtitle">${items.length} números</div>
+    <div class="gsub">Toque un nombre para quitarlo de la prueba.</div>
+    <div class="names" id="gnames"></div>
+    <button class="big test" id="gGo"></button>
+    <button class="linkbtn" id="tmOff">Ya probé, enviar a clientes</button>
+  </div>`;
+  const off = new Set(), box = $('gnames');
+  const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar prueba a ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
+  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = p.full[0]; r.children[2].textContent = p.phone;
+    r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
+  $('gGo').onclick = () => runBatch(items.filter(p => !off.has(p.key)), 'es');
+  $('tmOff').onclick = () => { if (confirm('¿Salir del modo prueba? Desde ahora los envíos llegan a clientes reales.')) { localStorage.setItem('tg_testmode','0'); paintTM(); groupView(); } };
+  paintGo();
+}
 function groupView(){
   cur = null;
+  if (testMode()) return testView();
   const stage = $('stage'), items = groupList();
   if (!items.length) {
     const sk = people.filter(p=>!sent[p.key] && skipped[p.key]).length;
@@ -328,7 +369,8 @@ function groupView(){
   stage.querySelectorAll('.size button').forEach(b => { b.classList.toggle('on', +b.dataset.g === gSize); b.onclick = () => { gSize = +b.dataset.g; localStorage.setItem('tg_gsize', gSize); groupView(); }; });
   $('gGo').onclick = () => {
     if (today >= DAY_LIMIT && !confirm('Ya envió ' + today + ' hoy. Es mejor seguir mañana para no ser marcado como spam. ¿Enviar de todas formas?')) return;
-    runBatch(items.filter(p => !off.has(p.key)), L);
+    const its = items.filter(p => !off.has(p.key));
+    sure(its, L);
   };
   paintGo();
 }
@@ -406,7 +448,7 @@ function rows(){
     const r = document.createElement('div'); r.className = 'r' + (selected.has(p.key) ? ' sel' : '');
     r.innerHTML = `${tab==='sent'?'<div class="ok">✓</div>':'<span class="ck">✓</span>'}<div class="n"><b></b><span></span></div><button></button>`;
     r.querySelector('b').textContent = p.test ? p.full[0] : [...new Set(p.full)].join(' y ');
-    r.querySelector('.n span').textContent = pretty(p.phone) + (p.lang==='en' ? ' · Inglés' : '');
+    r.querySelector('.n span').textContent = pretty(p.phone) + (p.lang==='en' ? ' · Inglés' : '') + (tab==='sent' && sent[p.key] ? ' · ' + new Date(sent[p.key].t).toLocaleString('es-CO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '');
     const b = r.querySelector('button');
     if (tab==='sent') { b.textContent = 'Desmarcar'; b.onclick = () => { delete sent[p.key]; save('tg_sent', sent); stats(); rows(); }; }
     else {
@@ -450,7 +492,32 @@ $('selGo').onclick = () => {
   const its = all.filter(p => (p.lang==='en') === (L==='en'));
   its.forEach(p => selected.delete(p.key));
   if (selected.size) toast(`Después envíe los ${selected.size} en inglés`);
-  closeSheets(); runBatch(its, L);
+  closeSheets(); if (its.every(p=>p.test)) runBatch(its, L); else sure(its, L);
+};
+
+/* confirmación antes de enviar a clientes */
+let sureItems = null, sureLang = 'es';
+function sure(its, L){
+  sureItems = its; sureLang = L;
+  $('sureTxt').innerHTML = `Va a enviar el video y el mensaje a <b>${its.length} clientes reales</b>${L==='en'?' (en inglés)':''}.<br><br>Desde <b>${its[0] ? [...new Set(its[0].full)][0] : ''}</b> hasta <b>${its.length ? [...new Set(its[its.length-1].full)][0] : ''}</b>.`;
+  openSheet('sheetSure');
+}
+$('sureYes').onclick = () => { const its = sureItems; closeSheets(); runBatch(its, sureLang); };
+$('sureNo').onclick = () => closeSheets();
+/* modo prueba */
+function paintTM(){ const on = testMode(); $('tmBtn').classList.toggle('on', on); $('tmLabel').textContent = on ? 'Encendido' : 'Apagado'; }
+$('tmBtn').onclick = () => { localStorage.setItem('tg_testmode', testMode() ? '0' : '1'); paintTM(); groupView(); };
+paintTM();
+/* registro CSV */
+$('csvBtn').onclick = () => {
+  const rows = people.filter(p => sent[p.key]).sort((a,b)=>sent[a.key].t - sent[b.key].t);
+  if (!rows.length) { toast('Todavía no hay envíos registrados'); return; }
+  const q = v => '"' + String(v).replace(/"/g,'""') + '"';
+  const lines = [['Fecha','Hora','Cliente','Teléfono','Idioma','Mensaje'].map(q).join(',')];
+  rows.forEach(p => { const d = new Date(sent[p.key].t);
+    lines.push([d.toLocaleDateString('es-CO'), d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), [...new Set(p.full)].join(' y '), pretty(p.phone), p.lang==='en'?'Inglés':'Español', msgFor(p)].map(q).join(',')); });
+  const blob = new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Registro_AccionDeGracias_' + todayKey() + '.csv'; document.body.appendChild(a); a.click(); a.remove();
 };
 
 /* envío rápido */
