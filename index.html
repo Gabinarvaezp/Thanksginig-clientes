@@ -112,6 +112,8 @@ nav button:active{background:#e9e3d8}
   <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
   <div class="set">
     <div class="box"><b>Cómo funciona</b><br>1. Toca <b>Enviar</b>. El número se copia solo.<br>2. Elige <b>Mensajes</b>. El video y el texto ya van adjuntos.<br>3. En <b>Para:</b> toca y <b>Pegar</b>. Envía.<br>Al volver, pasa solo al siguiente cliente.</div>
+    <div class="box"><b>Forma de envío</b><br><b>Atajo:</b> el número queda puesto solo (necesita el atajo <b>Gracias Uno</b>). <b>Compartir:</b> sin atajo, hay que pegar el número.
+      <div class="tabs" id="modeTabs" style="padding:10px 0 0"><button data-m="atajo">Atajo</button><button data-m="compartir">Compartir</button></div></div>
     <div class="box"><b>Video en español</b><video src="GraciasATi.mp4" controls playsinline preload="metadata"></video></div>
     <div class="box"><b>Video en inglés</b><video src="ThankYou.mp4" controls playsinline preload="metadata"></video></div>
     <div class="box"><b>Probar con otro número</b><br>Envía el video a cualquier número sin marcar a nadie.
@@ -134,7 +136,7 @@ nav button:active{background:#e9e3d8}
       &nbsp;&nbsp;· <b>Enviar mensaje</b>: Archivo a Numero<br>
       &nbsp;&nbsp;· <b>Enviar mensaje</b>: Mensaje a Numero<br>
       &nbsp;&nbsp;· <b>Esperar</b> 3 segundos<br>
-      En los dos "Enviar mensaje" desactiva <b>Mostrar al ejecutar</b>.<br>Para inglés: <b>duplica</b> el atajo, llámalo <b>Thanks Lote</b> y cambia el archivo a <b>ThankYou.mp4</b>.
+      En los dos "Enviar mensaje" desactiva <b>Mostrar al ejecutar</b>.<br>Para inglés: <b>duplica</b> el atajo, llámalo <b>Thanks Lote</b> y cambia el archivo a <b>ThankYou.mp4</b>.<br><br><b>Atajo Gracias Uno</b> (botón principal): duplica <b>Gracias Lote</b>, llámalo <b>Gracias Uno</b> y deja <b>Mostrar al ejecutar</b> encendido en los dos "Enviar mensaje". Para inglés, igual con <b>Thanks Uno</b> y ThankYou.mp4.
       <a class="full" style="display:block;text-align:center;text-decoration:none;border-radius:12px;padding:13px;margin-top:10px;background:#fff;color:#1F4A3A;font-weight:600;border:1px solid #E2DCCF" href="GraciasATi.mp4" download>Descargar video en español</a><a class="full" style="display:block;text-align:center;text-decoration:none;border-radius:12px;padding:13px;margin-top:8px;background:#fff;color:#1F4A3A;font-weight:600;border:1px solid #E2DCCF" href="ThankYou.mp4" download>Descargar video en inglés</a></div>
     <div class="box"><b>Volver a empezar</b><br>Borra las marcas de enviados en este teléfono.
       <button class="full ghost" id="resetBtn">Reiniciar progreso</button></div>
@@ -268,7 +270,7 @@ function next(pick){
     <div class="edit">Toca el mensaje para editarlo</div>
     <button class="send" id="send">${SEND_ICON}Enviar video + mensaje</button>
     <div class="sub"><button id="skip">Saltar</button><button id="mark">Ya lo envié</button></div>
-    <div class="hint">Elige <b>Mensajes</b> y pega el número en <b>Para:</b></div>
+    <div class="hint" id="hint"></div>
   </div>`;
   stage.querySelector('.who').textContent = joinNames(cur);
   stage.querySelector('.fulln').textContent = [...new Set(cur.full)].join(' · ');
@@ -276,7 +278,8 @@ function next(pick){
   const msg = $('msg'); msg.textContent = msgFor(cur);
   msg.addEventListener('input', () => { edits[cur.key] = msg.innerText; save('tg_edits2', edits); });
   requestAnimationFrame(()=>requestAnimationFrame(()=>$('card').classList.remove('in')));
-  $('send').onclick = () => share(cur, msg.innerText, true);
+  $('hint').innerHTML = mode() === 'atajo' ? 'Se abre Mensajes con el número, el video y el texto listos. Solo toca <b>Enviar</b>.' : 'Elige <b>Mensajes</b> y pega el número en <b>Para:</b>';
+  $('send').onclick = () => mode() === 'atajo' ? viaShortcut(cur, msg.innerText) : share(cur, msg.innerText, true);
   $('skip').onclick = () => { skipped[cur.key] = 1; save('tg_skip', skipped); const p = cur; advance(); toast('Saltado: ' + joinNames(p), () => { delete skipped[p.key]; save('tg_skip', skipped); next(p); }); };
   $('mark').onclick = () => markSent(cur);
 }
@@ -366,6 +369,23 @@ $('testBatchBtn').onclick = () => {
   const payload = nums.map(n => n + '|||' + MSG[testLang]('', false)).join('@@@');
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(testLang === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
 };
+
+/* envío uno a uno con atajo (número automático) */
+function mode(){ return localStorage.getItem('tg_mode') || 'atajo'; }
+let pendingOne = null;
+function viaShortcut(p, text){
+  pendingOne = p.key;
+  const name = p.lang === 'en' ? 'Thanks Uno' : 'Gracias Uno';
+  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(name) + '&input=text&text=' + encodeURIComponent(e164(p.phone) + '|||' + text);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !pendingOne) return;
+  const p = people.find(x => x.key === pendingOne); pendingOne = null;
+  if (p) setTimeout(() => markSent(p), 350);
+});
+function paintMode(){ document.querySelectorAll('#modeTabs button').forEach(b => b.classList.toggle('on', b.dataset.m === mode())); }
+document.querySelectorAll('#modeTabs button').forEach(b => b.onclick = () => { localStorage.setItem('tg_mode', b.dataset.m); paintMode(); if (cur) next(cur); });
+paintMode();
 
 loadVideo(); loadClients().then(()=>setTimeout(checkPending,300));
 </script>
