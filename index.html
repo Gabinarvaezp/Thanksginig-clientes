@@ -13,7 +13,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
 body{background:var(--paper);color:var(--ink);font-family:Outfit,system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100dvh}
-header{background:var(--pine);color:var(--paper);padding:calc(env(safe-area-inset-top) + 18px) 20px 22px;display:flex;align-items:center;gap:16px}
+header{background:var(--pine);color:var(--paper);padding:calc(env(safe-area-inset-top) + 16px) 20px 20px;border-radius:0 0 26px 26px}
 .ring{position:relative;width:74px;height:74px;flex:none}
 .ring svg{transform:rotate(-90deg)}
 .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
@@ -83,7 +83,7 @@ nav button:active{background:#e9e3d8}
 .size{display:flex;gap:8px;margin:16px 0 4px}
 .size button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:11px;font:inherit;font-weight:700;font-size:16px;color:var(--pine)}
 .size button.on{background:var(--pine);color:var(--paper);border-color:var(--pine)}
-.names{margin-top:14px;max-height:34dvh;overflow:auto;border-top:1px solid var(--line)}
+.names{margin-top:14px;border-top:1px solid var(--line)}
 .names div{display:flex;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:15px}
 .names div span:last-child{color:var(--muted);white-space:nowrap}
 .big{margin-top:18px;width:100%;border:0;border-radius:18px;padding:22px;font:inherit;font-size:21px;font-weight:800;background:var(--tomato);color:#fff;box-shadow:0 12px 24px -14px rgba(196,62,42,.8)}
@@ -131,19 +131,41 @@ body{font-size:17px}
 .switch button{border:0;border-radius:30px;width:64px;height:36px;background:var(--line);position:relative}
 .switch button::after{content:'';position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .switch button.on{background:#2f9e5b}.switch button.on::after{left:32px}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hlogo{height:34px;width:auto}
+.tmchip{background:#F2C14E;color:#3d2e05;font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:7px 11px;border-radius:30px}
+header h1{margin:16px 0 0;font-size:28px;font-weight:700;line-height:1.1}
+header h1 em{font-family:'Crimson Pro',serif;font-weight:500;color:var(--mint);font-size:32px}
+.hsub{font-size:15px;opacity:.75;margin-top:2px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.tiles div{background:rgba(255,255,255,.08);border-radius:14px;padding:10px 8px;text-align:center}
+.tiles b{display:block;font-size:24px;font-weight:800;line-height:1.1}
+.tiles span{font-size:13px;opacity:.75}
+.pbar{height:6px;background:rgba(255,255,255,.12);border-radius:6px;margin-top:12px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:var(--mint);border-radius:6px;transition:width .5s}
+.vid{display:flex;gap:14px;align-items:center;background:var(--paper);border-radius:16px;padding:10px;margin-top:16px}
+.vid .th{position:relative;width:62px;height:110px;border-radius:10px;overflow:hidden;flex:none;background:#1F4A3A}
+.vid .th img{width:100%;height:100%;object-fit:cover}
+.vid .th::after{content:'';position:absolute;left:50%;top:50%;width:0;height:0;border-left:14px solid #fff;border-top:9px solid transparent;border-bottom:9px solid transparent;transform:translate(-35%,-50%);filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.vid .tx{font-size:15px;line-height:1.35;color:var(--ink)}
+.vid .tx b{display:block;font-size:16px;color:var(--pine)}
+.vid .tx span{color:var(--muted)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--mint);color:var(--pine);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none}
+.names div:not(.sel) .av{background:var(--line);color:var(--muted)}
 .loading{text-align:center;color:var(--muted);padding:60px 0}
 </style>
 </head>
 <body>
 <header>
-  <div class="ring">
-    <svg width="74" height="74"><circle cx="37" cy="37" r="31" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="7"/><circle id="arc" cx="37" cy="37" r="31" fill="none" stroke="#B7D4C3" stroke-width="7" stroke-linecap="round" stroke-dasharray="194.8" stroke-dashoffset="194.8" style="transition:stroke-dashoffset .5s"/></svg>
-    <div class="num"><b id="pct">0%</b><span>enviados</span></div>
+  <div class="hrow"><img src="logo.png" alt="Jorge Martínez" class="hlogo"><span class="tmchip" id="tmChip">Modo prueba</span></div>
+  <h1>Acción de <em>Gracias</em></h1>
+  <div class="hsub">Envío del video a clientes</div>
+  <div class="tiles">
+    <div><b id="today">0</b><span>Hoy</span></div>
+    <div><b id="sentN">0</b><span>Enviados</span></div>
+    <div><b id="left">–</b><span>Faltan</span></div>
   </div>
-  <div class="htxt">
-    <h1>Acción de <em>Gracias</em></h1>
-    <div class="stats"><span>Hoy <b id="today">0</b></span><span>Enviados <b id="sentN">0</b></span><span>Faltan <b id="left">–</b></span></div>
-  </div>
+  <div class="pbar"><i id="pbar"></i></div>
 </header>
 
 <main><div class="stage" id="stage"><div class="loading">Cargando clientes…</div></div></main>
@@ -166,7 +188,7 @@ body{font-size:17px}
   <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
   <div class="set">
     <div class="box"><b>Cómo funciona</b><br>1. En <b>Inicio</b> toque <b>Enviar a estos 20</b>.<br>2. El iPhone manda solo el video y el mensaje a cada cliente.<br>3. Vuelva a esta página y toque <b>Sí, ya se enviaron</b>.<br>4. Aparecen los siguientes 20. Repita hasta unos 200 por día.</div>
-    <div class="box"><b>Modo prueba</b><br>Encendido: en Inicio solo aparecen los números de prueba. Nada le llega a clientes.
+    <div class="box" id="tmBox"><b>Modo prueba</b><br>Encendido: en Inicio solo aparecen los números de prueba. Nada le llega a clientes.
       <div class="switch"><span id="tmLabel"></span><button id="tmBtn"></button></div></div>
     <div class="box"><b>Registro de enviados</b><br>Descarga un archivo con todos los clientes a los que ya se les envió, con fecha y hora. Se abre en Excel o Google Sheets.
       <button class="full" id="csvBtn">Descargar registro</button></div>
@@ -312,8 +334,8 @@ function stats(){
   const total = people.length, n = people.filter(p=>sent[p.key]).length, tk = todayKey();
   const today = Object.values(sent).filter(v => v && v.d === tk).length;
   $('sentN').textContent = n; $('left').textContent = total - n; $('today').textContent = today;
-  const pc = total ? n/total : 0; $('pct').textContent = Math.round(pc*100) + '%';
-  $('arc').style.strokeDashoffset = 194.8 * (1 - pc);
+  const pc = total ? n/total : 0; $('pbar').style.width = (pc*100) + '%';
+  $('tmChip').style.display = testMode() ? '' : 'none';
 }
 function queue(){ return people.filter(p => !sent[p.key] && !skipped[p.key]); }
 
@@ -321,27 +343,30 @@ let gSize = +(localStorage.getItem('tg_gsize') || 20);
 const DAY_LIMIT = 200;
 function groupLang(){ const q = queue(); return q.some(p=>p.lang==='es') ? 'es' : 'en'; }
 function groupList(){ const L = groupLang(); return queue().filter(p=>p.lang===L).slice(0, gSize); }
-function testMode(){ return localStorage.getItem('tg_testmode') !== '0'; }
+const LOCK_TEST = true; // cambiar a false cuando Gabby apruebe
+function testMode(){ return LOCK_TEST || localStorage.getItem('tg_testmode') !== '0'; }
+function vidCard(L){
+  return `<div class="vid" id="vidCard"><div class="th"><img src="${L==='en'?'ThankYou':'GraciasATi'}_poster.jpg" alt=""></div><div class="tx"><b>${L==='en'?'Video en inglés':'Video en español'}</b>${L==='en'?'“Hi … I just want to say thank you…”':'“Hola … quiero agradecerle por confiar en mí…”'}<br><span>Video + mensaje con el nombre de cada uno</span></div></div>`;
+}
+function initials(n){ return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
 function testView(){
   const stage = $('stage'), items = testContacts();
-  stage.innerHTML = `<div class="testbanner"><b>Modo prueba</b>Solo se envía a los números de prueba. Ningún cliente recibe nada.</div>
-  <div class="gcard">
-    <div class="eyebrow">Números de prueba</div>
-    <div class="gtitle">${items.length} números</div>
-    <div class="gsub">Elija el idioma y toque un nombre para quitarlo de la prueba.</div>
+  let tl = localStorage.getItem('tg_testlang') || 'es';
+  stage.innerHTML = `<div class="gcard">
+    <div class="eyebrow">Prueba</div>
+    <div class="gtitle">Enviar a los números de prueba</div>
+    <div class="gsub">Ningún cliente recibe nada mientras esté en modo prueba.</div>
     <div class="size" id="tLang"><button data-l="es">Español</button><button data-l="en">Inglés</button></div>
+    <div id="vidBox"></div>
     <div class="names" id="gnames"></div>
     <button class="big test" id="gGo"></button>
-    <button class="linkbtn" id="tmOff">Ya probé, enviar a clientes</button>
   </div>`;
   const off = new Set(), box = $('gnames');
-  let tl = localStorage.getItem('tg_testlang') || 'es';
-  const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar prueba ${tl==='en'?'en inglés':'en español'} a ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
+  const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar prueba a ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; $('vidBox').innerHTML = vidCard(tl); $('vidCard').onclick = () => { $('openSet').click(); }; };
   document.querySelectorAll('#tLang button').forEach(b => { b.classList.toggle('on', b.dataset.l === tl); b.onclick = () => { tl = b.dataset.l; localStorage.setItem('tg_testlang', tl); document.querySelectorAll('#tLang button').forEach(x=>x.classList.toggle('on', x===b)); paintGo(); }; });
-  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = p.full[0]; r.children[2].textContent = p.phone;
+  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="av"></span><span class="nm"></span><span></span>'; r.children[1].textContent = initials(p.full[0]); r.children[2].textContent = p.full[0]; r.children[3].textContent = p.phone;
     r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
   $('gGo').onclick = () => runBatch(items.filter(p => !off.has(p.key)), tl);
-  $('tmOff').onclick = () => { if (confirm('¿Salir del modo prueba? Desde ahora los envíos llegan a clientes reales.')) { localStorage.setItem('tg_testmode','0'); paintTM(); groupView(); } };
   paintGo();
 }
 function groupView(){
@@ -360,6 +385,7 @@ function groupView(){
     <div class="gtitle">${items.length} clientes listos</div>
     <div class="gsub">Cada uno recibe el video y su mensaje por separado. Toque un nombre para quitarlo.</div>
     <div class="size"><button data-g="10">10</button><button data-g="20">20</button></div>
+    ${vidCard(L)}
     <div class="names" id="gnames"></div>
     <button class="big" id="gGo">Enviar a estos ${items.length}</button>
     <div class="limit">Hoy lleva <b>${today}</b> de ${DAY_LIMIT} recomendados</div>
@@ -367,7 +393,7 @@ function groupView(){
   const box = $('gnames');
   const off = new Set();
   const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar a estos ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
-  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = [...new Set(p.full)].join(' y '); r.children[2].textContent = pretty(p.phone);
+  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="av"></span><span class="nm"></span><span></span>'; r.children[1].textContent = initials(p.full[0]); r.children[2].textContent = [...new Set(p.full)].join(' y '); r.children[3].textContent = pretty(p.phone);
     r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
   stage.querySelectorAll('.size button').forEach(b => { b.classList.toggle('on', +b.dataset.g === gSize); b.onclick = () => { gSize = +b.dataset.g; localStorage.setItem('tg_gsize', gSize); groupView(); }; });
   $('gGo').onclick = () => {
@@ -510,7 +536,7 @@ $('sureNo').onclick = () => closeSheets();
 /* modo prueba */
 function paintTM(){ const on = testMode(); $('tmBtn').classList.toggle('on', on); $('tmLabel').textContent = on ? 'Encendido' : 'Apagado'; }
 $('tmBtn').onclick = () => { localStorage.setItem('tg_testmode', testMode() ? '0' : '1'); paintTM(); groupView(); };
-paintTM();
+paintTM(); if (LOCK_TEST) $('tmBox').style.display = 'none';
 /* registro CSV */
 $('csvBtn').onclick = () => {
   const rows = people.filter(p => sent[p.key]).sort((a,b)=>sent[a.key].t - sent[b.key].t);
