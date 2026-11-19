@@ -415,6 +415,7 @@ function testView(){
   $('gGo').onclick = () => runBatch(items.filter(p => !off.has(p.key)), tl);
   paintGo();
 }
+function groupNum(){ const n = people.filter(p=>sent[p.key]).length; return n < 20 ? 1 : 2 + Math.floor((n - 20) / 30); }
 function groupView(){
   cur = null;
   if (testMode()) return testView();
@@ -428,7 +429,7 @@ function groupView(){
   const today = Object.values(sent).filter(v => v && v.d === tk).length;
   stage.innerHTML = `<div class="gcard">
     <div class="eyebrow">Siguiente grupo · ${L==='en'?'Inglés':'Español'}</div>
-    <div class="gtitle">Siguiente grupo listo</div>
+    <div class="gtitle">Grupo ${groupNum()}</div>
     <div class="gsub">Cada uno recibe el video y su mensaje por separado. Toque un nombre para quitarlo.</div>
     
     <div class="names" id="gnames"></div>
