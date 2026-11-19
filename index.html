@@ -2,177 +2,269 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1F4A3A">
 <title>Acción de Gracias — Jorge Martínez</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Crimson+Pro:ital,wght@1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Crimson+Pro:ital,wght@1,500&display=swap" rel="stylesheet">
 <style>
-:root{--pine:#1F4A3A;--pine-d:#163629;--mint:#B7D4C3;--paper:#F3EFE7;--tomato:#C43E2A;--ink:#1d2a24;--line:#E2DCCF}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:Outfit,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:70px}
-header{background:var(--pine);color:var(--paper);padding:26px 20px 22px}
-header h1{margin:0;font-size:24px;font-weight:700;letter-spacing:.2px}
-header h1 em{font-family:'Crimson Pro',serif;font-weight:500;color:var(--mint);font-size:28px}
-header p{margin:6px 0 0;font-size:14px;opacity:.75}
-.bar{height:6px;background:rgba(255,255,255,.15);border-radius:6px;margin-top:16px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--mint);width:0;transition:width .3s}
-.count{font-size:13px;margin-top:6px;opacity:.85}
-.wrap{max-width:620px;margin:0 auto;padding:16px}
-.tools{display:flex;gap:8px;margin-bottom:14px}
-.tools input{flex:1;min-width:0;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:#fff}
-.tools select{padding:0 10px;border:1px solid var(--line);border-radius:12px;font:inherit;background:#fff}
-.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 20px -14px rgba(0,0,0,.25);border:1px solid transparent}
-.card.sent{opacity:.55}
-.card.test{border-color:var(--mint)}
-.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.name{font-weight:700;font-size:18px}
-.tel{font-size:14px;opacity:.6;margin-top:2px}
-.tag{font-size:12px;font-weight:600;padding:4px 9px;border-radius:20px;background:var(--paper);color:var(--pine);white-space:nowrap}
-.tag.ok{background:var(--pine);color:var(--paper)}
-textarea{width:100%;margin:12px 0 4px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:15px;line-height:1.4;background:var(--paper);resize:vertical;min-height:150px;color:var(--ink)}
-.row{display:flex;gap:8px;margin-top:8px}
-button{flex:1;border:0;border-radius:12px;padding:14px 10px;font:inherit;font-weight:600;font-size:15px;cursor:pointer}
-.send{background:var(--tomato);color:#fff;flex:2}
-.sms{background:var(--mint);color:var(--pine)}
-.mark{background:var(--paper);color:var(--pine)}
-.help{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;font-size:14px;line-height:1.5}
-.help b{color:var(--pine)}
-.help ol{margin:8px 0 0;padding-left:20px}
-#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120px);background:var(--pine);color:var(--paper);padding:12px 18px;border-radius:12px;font-size:14px;max-width:90%;transition:transform .3s;z-index:9;text-align:center}
+:root{--pine:#1F4A3A;--pine-d:#15362a;--mint:#B7D4C3;--paper:#F3EFE7;--tomato:#C43E2A;--ink:#1d2a24;--line:#E2DCCF;--muted:#6f7c75}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:Outfit,system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100dvh}
+header{background:var(--pine);color:var(--paper);padding:calc(env(safe-area-inset-top) + 18px) 20px 22px;display:flex;align-items:center;gap:16px}
+.ring{position:relative;width:74px;height:74px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ring .num b{font-size:18px}
+.ring .num span{font-size:10px;opacity:.7;margin-top:3px}
+.htxt h1{margin:0;font-size:21px;font-weight:700}
+.htxt h1 em{font-family:'Crimson Pro',serif;font-weight:500;color:var(--mint);font-size:24px}
+.stats{display:flex;gap:14px;margin-top:6px;font-size:13px;opacity:.85}
+.stats b{font-weight:700}
+main{flex:1;padding:18px 16px 10px;max-width:560px;width:100%;margin:0 auto;display:flex;flex-direction:column}
+.stage{position:relative;flex:1;display:flex;flex-direction:column}
+.card{background:#fff;border-radius:22px;padding:22px 20px 20px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 18px 40px -26px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s}
+.card.out{transform:translateX(-110%) rotate(-4deg);opacity:0}
+.card.in{transform:translateX(30px);opacity:0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.who{font-size:30px;font-weight:800;line-height:1.1;margin:6px 0 4px;color:var(--pine)}
+.phone{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:600;color:var(--ink)}
+.phone>span:first-child{white-space:nowrap}
+.fulln{font-size:14px;color:var(--muted);margin:-2px 0 8px}
+.chip{white-space:nowrap;font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px;background:var(--mint);color:var(--pine);opacity:0;transform:scale(.8);transition:.25s}
+.chip.show{opacity:1;transform:scale(1)}
+.lang{font-size:12px;font-weight:600;padding:4px 9px;border-radius:20px;background:var(--paper);color:var(--pine);margin-left:auto}
+.msg{margin-top:16px;background:var(--paper);border-radius:16px;padding:14px 16px;font-size:15.5px;line-height:1.45;white-space:pre-wrap;min-height:120px;outline:none;border:1.5px solid transparent}
+.msg:focus{border-color:var(--mint);background:#fff}
+.edit{font-size:13px;color:var(--muted);margin-top:8px;text-align:right}
+.send{margin-top:18px;width:100%;border:0;border-radius:18px;padding:20px;font:inherit;font-size:19px;font-weight:700;background:var(--tomato);color:#fff;box-shadow:0 12px 24px -14px rgba(196,62,42,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.send:active{transform:scale(.98)}
+.send svg{width:22px;height:22px}
+.sub{display:flex;gap:10px;margin-top:10px}
+.sub button{flex:1;border:0;border-radius:14px;padding:14px;font:inherit;font-size:15px;font-weight:600;background:#fff;color:var(--pine);border:1px solid var(--line);cursor:pointer}
+.hint{font-size:13px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.4}
+.hint b{color:var(--pine)}
+nav{display:flex;justify-content:center;gap:8px;padding:10px 16px calc(env(safe-area-inset-bottom) + 14px)}
+nav button{border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--pine);padding:10px 14px;border-radius:12px;cursor:pointer}
+nav button:active{background:#e9e3d8}
+.done{text-align:center;padding:50px 20px}
+.done h2{font-size:28px;color:var(--pine);margin:0 0 8px}
+.done p{color:var(--muted)}
+/* sheets */
+.sheet-bg{position:fixed;inset:0;background:rgba(15,30,24,.45);opacity:0;pointer-events:none;transition:.25s;z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:86dvh;background:var(--paper);border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:21;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.sheet.open{transform:none}.sheet-bg.open{opacity:1;pointer-events:auto}
+.sheet-h{padding:14px 18px 10px;display:flex;align-items:center;gap:10px}
+.sheet-h h3{margin:0;font-size:18px;flex:1;color:var(--pine)}
+.sheet-h button{border:0;background:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-weight:600;color:var(--pine)}
+.tabs{display:flex;gap:6px;padding:0 18px 10px}
+.tabs button{flex:1;border:0;padding:10px;border-radius:10px;font:inherit;font-size:14px;font-weight:600;background:#fff;color:var(--pine)}
+.tabs button.on{background:var(--pine);color:var(--paper)}
+.search{margin:0 18px 10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:#fff}
+.rows{overflow:auto;padding:0 18px 18px;-webkit-overflow-scrolling:touch}
+.r{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:6px}
+.r .n{flex:1;min-width:0}.r .n b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r .n span{font-size:13px;color:var(--muted)}
+.r button{border:0;border-radius:10px;padding:9px 12px;font:inherit;font-size:13px;font-weight:600;background:var(--paper);color:var(--pine)}
+.r .ok{width:22px;height:22px;border-radius:50%;background:var(--pine);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.set{padding:0 18px 18px;overflow:auto}
+.set .box{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;font-size:14px;line-height:1.5}
+.set .box b{color:var(--pine)}
+.set button.full{width:100%;border:0;border-radius:12px;padding:13px;font:inherit;font-weight:600;background:var(--pine);color:var(--paper);margin-top:8px}
+.set button.ghost{background:var(--paper);color:var(--pine)}
+.set video{display:block;width:100%;max-height:340px;border-radius:12px;background:#000}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 70px);transform:translateX(-50%) translateY(140px);background:var(--pine);color:var(--paper);padding:12px 14px 12px 18px;border-radius:14px;font-size:14px;width:max-content;max-width:92%;transition:transform .3s;z-index:30;display:flex;align-items:center;gap:12px}
 #toast.show{transform:translateX(-50%) translateY(0)}
-.more{display:block;width:100%;background:#fff;color:var(--pine);border:1px solid var(--line)}
-video{display:block;height:200px;width:auto;border-radius:12px;margin:12px auto 0;background:#000}
+#toast button{border:0;background:var(--mint);color:var(--pine);font:inherit;font-weight:700;font-size:13px;padding:7px 11px;border-radius:9px}
+.loading{text-align:center;color:var(--muted);padding:60px 0}
 </style>
 </head>
 <body>
 <header>
-  <h1>Acción de Gracias · <em>clientes</em></h1>
-  <p>Video + mensaje personalizado por mensaje de texto</p>
-  <div class="bar"><i id="prog"></i></div>
-  <div class="count" id="count">Cargando clientes…</div>
+  <div class="ring">
+    <svg width="74" height="74"><circle cx="37" cy="37" r="31" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="7"/><circle id="arc" cx="37" cy="37" r="31" fill="none" stroke="#B7D4C3" stroke-width="7" stroke-linecap="round" stroke-dasharray="194.8" stroke-dashoffset="194.8" style="transition:stroke-dashoffset .5s"/></svg>
+    <div class="num"><b id="pct">0%</b><span>enviados</span></div>
+  </div>
+  <div class="htxt">
+    <h1>Acción de <em>Gracias</em></h1>
+    <div class="stats"><span>Hoy <b id="today">0</b></span><span>Enviados <b id="sentN">0</b></span><span>Faltan <b id="left">–</b></span></div>
+  </div>
 </header>
-<div class="wrap">
-  <div class="help">
-    <b>Cómo enviar</b>
-    <ol>
-      <li>Toca <b>Enviar video + mensaje</b>. El número se copia solo.</li>
-      <li>En el menú que aparece, elige <b>Mensajes</b>. El video y el texto quedan adjuntos.</li>
-      <li>En <b>Para:</b> mantén presionado y <b>Pegar</b> el número. Envía.</li>
-    </ol>
-    <video id="vid" src="GraciasATi.mp4" controls playsinline preload="metadata"></video>
-  </div>
-  <div class="tools">
-    <input id="q" type="search" placeholder="Buscar cliente o teléfono">
-    <select id="f"><option value="pend">Pendientes</option><option value="all">Todos</option><option value="sent">Enviados</option></select>
-  </div>
-  <div id="list"></div>
-  <button class="more" id="more" style="display:none">Ver más</button>
-</div>
-<div id="toast"></div>
-<script>
-const TEST = [{key:'test', names:['Prueba'], phone:'+57 319 305 9563', lang:'es', test:true}];
-const MSG = {
-  es: n => `Hola ${n}, quiero agradecerte por confiar en mí y en mis servicios. Sabes que siempre estoy a tu servicio para lo que necesites.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`,
-  en: n => `Hi ${n}, I want to thank you for trusting me and my services. You know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
-};
-let people = [], videoFile = null, shown = 40;
-const sent = JSON.parse(localStorage.getItem('tg_sent') || '{}');
-const edits = JSON.parse(localStorage.getItem('tg_edits') || '{}');
 
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),3800)}
+<main><div class="stage" id="stage"><div class="loading">Cargando clientes…</div></div></main>
+
+<nav>
+  <button id="openList">Lista</button>
+  <button id="openSent">Enviados</button>
+  <button id="openSet">Ajustes</button>
+</nav>
+
+<div class="sheet-bg" id="bg"></div>
+<div class="sheet" id="sheetList">
+  <div class="sheet-h"><h3 id="listTitle">Clientes</h3><button data-close>Cerrar</button></div>
+  <div class="tabs"><button data-t="pend" class="on">Pendientes</button><button data-t="sent">Enviados</button><button data-t="skip">Saltados</button></div>
+  <input class="search" id="q" type="search" placeholder="Buscar nombre o teléfono">
+  <div class="rows" id="rows"></div>
+</div>
+<div class="sheet" id="sheetSet">
+  <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
+  <div class="set">
+    <div class="box"><b>Cómo funciona</b><br>1. Toca <b>Enviar</b>. El número se copia solo.<br>2. Elige <b>Mensajes</b>. El video y el texto ya van adjuntos.<br>3. En <b>Para:</b> toca y <b>Pegar</b>. Envía.<br>Al volver, pasa solo al siguiente cliente.</div>
+    <div class="box"><b>Video</b><video src="GraciasATi.mp4" controls playsinline preload="metadata"></video></div>
+    <div class="box"><b>Probar con otro número</b><br>Envía el video a cualquier número sin marcar a nadie.
+      <input class="search" id="testNum" style="margin:10px 0 0;width:100%" inputmode="tel" placeholder="+57 319 305 9563" value="+57 319 305 9563">
+      <button class="full" id="testBtn">Enviar prueba</button></div>
+    <div class="box"><b>Volver a empezar</b><br>Borra las marcas de enviados en este teléfono.
+      <button class="full ghost" id="resetBtn">Reiniciar progreso</button></div>
+  </div>
+</div>
+<div id="toast"><span id="toastTxt"></span><button id="toastBtn" style="display:none">Deshacer</button></div>
+
+<script>
+const MSG = {
+  es: n => `Hola${n?' '+n:''}, quiero agradecerte por confiar en mí y en mis servicios. Sabes que siempre estoy a tu servicio para lo que necesites.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`,
+  en: n => `Hi${n?' '+n:''}, I want to thank you for trusting me and my services. You know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
+};
+const SEND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>';
+const LS = k => { try { return JSON.parse(localStorage.getItem(k) || '{}') } catch(e){ return {} } };
+const save = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch(e){} };
+let people = [], videoFile = null, cur = null, tab = 'pend';
+const sent = LS('tg_sent');
+for (const k in sent) if (typeof sent[k] !== 'object') sent[k] = {t: sent[k] || 0, d: ''};
+const skipped = LS('tg_skip'), edits = LS('tg_edits');
+
+const $ = id => document.getElementById(id);
 function digits(p){return (p||'').replace(/\D/g,'')}
 function e164(p){let d=digits(p);if(d.length===10)d='1'+d;return d?'+'+d:''}
-function pretty(p){const d=digits(p);if(d.length===10)return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;return p}
+function pretty(p){let d=digits(p);if(d.length===11&&d[0]==='1')d=d.slice(1);if(d.length===10)return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;return p}
 function cap(w){return w.toLowerCase().replace(/(^|[\s-])(\S)/g,(a,b,c)=>b+c.toUpperCase())}
 function first(n){return cap((n||'').trim().split(/\s+/)[0]||'')}
-function joinNames(ns){const u=[...new Set(ns)];return u.length<=1?u[0]||'':u.slice(0,-1).join(', ')+' y '+u[u.length-1]}
+function joinNames(ns){const u=[...new Set(ns)];return u.length<=1?(u[0]||''):u.slice(0,-1).join(', ')+' y '+u[u.length-1]}
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function msgFor(p){return edits[p.key] || MSG[p.lang](joinNames(p.names))}
+
+let tTimer;
+function toast(txt, undo){
+  $('toastTxt').textContent = txt;
+  const b = $('toastBtn'); b.style.display = undo ? '' : 'none'; b.onclick = () => { undo(); $('toast').classList.remove('show'); };
+  $('toast').classList.add('show'); clearTimeout(tTimer); tTimer = setTimeout(()=>$('toast').classList.remove('show'), undo ? 5000 : 3200);
+}
 
 async function loadClients(){
-  let list=null;
-  try{const raw=localStorage.getItem('clients');if(raw)list=JSON.parse(raw)}catch(e){}
-  if(!list||!list.length){
-    try{
-      const html=await (await fetch('/ClientWishes/index.html',{cache:'no-store'})).text();
-      const m=html.match(/const SEED\s*=\s*(\[[\s\S]*?\]);\n/);
-      if(m)list=JSON.parse(m[1]);
-    }catch(e){}
+  let list = null;
+  try { const raw = localStorage.getItem('clients'); if (raw) list = JSON.parse(raw); } catch(e){}
+  if (!list || !list.length) {
+    try {
+      const html = await (await fetch('/ClientWishes/index.html', {cache:'no-store'})).text();
+      const m = html.match(/const SEED\s*=\s*(\[[\s\S]*?\]);\n/);
+      if (m) list = JSON.parse(m[1]);
+    } catch(e){}
   }
-  list=list||[];
-  const byPhone=new Map();
-  list.forEach(c=>{
-    const d=digits(c.phone); if(d.length<10)return;
-    if(!byPhone.has(d))byPhone.set(d,{key:d,names:[],phone:c.phone,lang:c.lang==='en'?'en':'es'});
-    byPhone.get(d).names.push(first(c.name));
+  const map = new Map();
+  (list || []).forEach(c => {
+    const d = digits(c.phone); if (d.length < 10) return;
+    const k = d.slice(-10);
+    if (!map.has(k)) map.set(k, {key:k, names:[], full:[], phone:c.phone, lang: c.lang === 'en' ? 'en' : 'es'});
+    const p = map.get(k); p.names.push(first(c.name)); p.full.push(cap(c.name||''));
   });
-  people=[...byPhone.values()].sort((a,b)=>a.names[0].localeCompare(b.names[0]));
-  render();
+  people = [...map.values()].sort((a,b)=>a.names[0].localeCompare(b.names[0]));
+  stats(); next();
 }
-
 async function loadVideo(){
-  try{const b=await (await fetch('GraciasATi.mp4')).blob();videoFile=new File([b],'Feliz-Accion-de-Gracias.mp4',{type:'video/mp4'})}catch(e){}
+  try { const b = await (await fetch('GraciasATi.mp4')).blob(); videoFile = new File([b], 'Feliz-Accion-de-Gracias.mp4', {type:'video/mp4'}); } catch(e){}
 }
 
-function msgFor(p){
-  if(edits[p.key])return edits[p.key];
-  return MSG[p.lang](joinNames(p.names));
+function stats(){
+  const total = people.length, n = people.filter(p=>sent[p.key]).length, tk = todayKey();
+  const today = Object.values(sent).filter(v => v && v.d === tk).length;
+  $('sentN').textContent = n; $('left').textContent = total - n; $('today').textContent = today;
+  const pc = total ? n/total : 0; $('pct').textContent = Math.round(pc*100) + '%';
+  $('arc').style.strokeDashoffset = 194.8 * (1 - pc);
+}
+function queue(){ return people.filter(p => !sent[p.key] && !skipped[p.key]); }
+
+function next(pick){
+  const q = queue();
+  cur = pick || q[0] || null;
+  const stage = $('stage');
+  if (!cur) {
+    const sk = people.filter(p=>!sent[p.key] && skipped[p.key]).length;
+    stage.innerHTML = `<div class="done"><h2>¡Listo, todos enviados!</h2><p>${sk ? sk + ' clientes saltados quedan en la lista.' : 'Feliz Día de Acción de Gracias.'}</p></div>`;
+    return;
+  }
+  const pos = people.filter(p=>sent[p.key]).length + 1;
+  stage.innerHTML = `
+  <div class="card in" id="card">
+    <div class="eyebrow">Cliente ${pos} de ${people.length}${skipped[cur.key] ? ' · saltado' : ''}</div>
+    <div class="who"></div>
+    <div class="fulln"></div>
+    <div class="phone"><span></span><span class="chip" id="chip">Número copiado</span><span class="lang">${cur.lang==='en'?'Inglés':'Español'}</span></div>
+    <div class="msg" id="msg" contenteditable="true"></div>
+    <div class="edit">Toca el mensaje para editarlo</div>
+    <button class="send" id="send">${SEND_ICON}Enviar video + mensaje</button>
+    <div class="sub"><button id="skip">Saltar</button><button id="mark">Ya lo envié</button></div>
+    <div class="hint">Elige <b>Mensajes</b> y pega el número en <b>Para:</b></div>
+  </div>`;
+  stage.querySelector('.who').textContent = joinNames(cur.names);
+  stage.querySelector('.fulln').textContent = [...new Set(cur.full)].join(' · ');
+  stage.querySelector('.phone span').textContent = pretty(cur.phone);
+  const msg = $('msg'); msg.textContent = msgFor(cur);
+  msg.addEventListener('input', () => { edits[cur.key] = msg.innerText; save('tg_edits', edits); });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>$('card').classList.remove('in')));
+  $('send').onclick = () => share(cur, msg.innerText, true);
+  $('skip').onclick = () => { skipped[cur.key] = 1; save('tg_skip', skipped); const p = cur; advance(); toast('Saltado: ' + joinNames(p.names), () => { delete skipped[p.key]; save('tg_skip', skipped); next(p); }); };
+  $('mark').onclick = () => markSent(cur);
+}
+function advance(){ const c = $('card'); if (c) { c.classList.add('out'); setTimeout(()=>next(), 300); } else next(); }
+function markSent(p){
+  sent[p.key] = {t: Date.now(), d: todayKey()}; delete skipped[p.key];
+  save('tg_sent', sent); save('tg_skip', skipped); stats(); advance();
+  toast('Enviado a ' + joinNames(p.names), () => { delete sent[p.key]; save('tg_sent', sent); stats(); next(p); });
+}
+async function share(p, text, mark){
+  const num = e164(p.phone);
+  navigator.clipboard.writeText(num).catch(()=>{});
+  const chip = $('chip'); if (chip) chip.classList.add('show');
+  if (!videoFile) { toast('El video aún está cargando, intenta en unos segundos'); return; }
+  const data = {files:[videoFile], text};
+  if (!(navigator.canShare && navigator.canShare(data))) { toast('Abre esta página en Safari del iPhone para adjuntar el video'); return; }
+  try { await navigator.share(data); if (mark) markSent(p); else toast('Prueba enviada'); }
+  catch(e){ if (e.name !== 'AbortError') toast('No se pudo abrir el menú de compartir'); }
 }
 
-function updateCount(){
-  const total=people.length, n=people.filter(p=>sent[p.key]).length;
-  document.getElementById('count').textContent=`${n} de ${total} enviados`;
-  document.getElementById('prog').style.width=total?(n/total*100)+'%':'0';
-}
-
-function card(p){
-  const el=document.createElement('div');
-  el.className='card'+(sent[p.key]?' sent':'')+(p.test?' test':'');
-  el.innerHTML=`<div class="top"><div><div class="name"></div><div class="tel"></div></div><span class="tag"></span></div>
-  <textarea></textarea>
-  <div class="row"><button class="send">Enviar video + mensaje</button></div>
-  <div class="row"><button class="sms">Solo texto</button><button class="mark"></button></div>`;
-  el.querySelector('.name').textContent=p.test?'Prueba':joinNames(p.names);
-  el.querySelector('.tel').textContent=pretty(p.phone);
-  const tag=el.querySelector('.tag'), mark=el.querySelector('.mark');
-  const paint=()=>{tag.textContent=sent[p.key]?'Enviado':(p.lang==='en'?'Inglés':'Pendiente');tag.className='tag'+(sent[p.key]?' ok':'');mark.textContent=sent[p.key]?'Desmarcar':'Marcar enviado';el.classList.toggle('sent',!!sent[p.key])};
-  paint();
-  const ta=el.querySelector('textarea'); ta.value=msgFor(p);
-  ta.addEventListener('input',()=>{edits[p.key]=ta.value;localStorage.setItem('tg_edits',JSON.stringify(edits))});
-  const setSent=v=>{if(v)sent[p.key]=Date.now();else delete sent[p.key];localStorage.setItem('tg_sent',JSON.stringify(sent));paint();updateCount()};
-  el.querySelector('.send').addEventListener('click',async()=>{
-    const num=e164(p.phone);
-    navigator.clipboard.writeText(num).catch(()=>{});
-    if(!videoFile){toast('El video aún está cargando, intenta de nuevo en unos segundos');return}
-    const data={files:[videoFile],text:ta.value};
-    if(navigator.canShare&&navigator.canShare(data)){
-      try{await navigator.share(data);setSent(true);toast('Listo. Número copiado: '+num)}
-      catch(e){if(e.name!=='AbortError')toast('No se pudo abrir el menú de compartir')}
-    }else{
-      toast('Este navegador no permite adjuntar el video. Abre la página en Safari del iPhone.');
-    }
+/* sheets */
+function openSheet(id){ $('bg').classList.add('open'); $(id).classList.add('open'); }
+function closeSheets(){ $('bg').classList.remove('open'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open')); }
+$('bg').onclick = closeSheets; document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
+$('openList').onclick = () => { setTab('pend'); openSheet('sheetList'); };
+$('openSent').onclick = () => { setTab('sent'); openSheet('sheetList'); };
+$('openSet').onclick = () => openSheet('sheetSet');
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.t));
+$('q').addEventListener('input', rows);
+function setTab(t){ tab = t; document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.t===t)); $('q').value=''; rows(); }
+function rows(){
+  const q = $('q').value.trim().toLowerCase(), qd = digits(q);
+  let items = people.filter(p => tab==='sent' ? sent[p.key] : tab==='skip' ? (!sent[p.key] && skipped[p.key]) : (!sent[p.key] && !skipped[p.key]));
+  if (q) items = items.filter(p => p.full.join(' ').toLowerCase().includes(q) || (qd && digits(p.phone).includes(qd)));
+  if (tab==='sent') items.sort((a,b)=>sent[b.key].t - sent[a.key].t);
+  $('listTitle').textContent = (tab==='sent'?'Enviados':tab==='skip'?'Saltados':'Pendientes') + ' · ' + items.length;
+  const box = $('rows'); box.innerHTML = '';
+  items.slice(0, 150).forEach(p => {
+    const r = document.createElement('div'); r.className = 'r';
+    r.innerHTML = `${tab==='sent'?'<div class="ok">✓</div>':''}<div class="n"><b></b><span></span></div><button></button>`;
+    r.querySelector('b').textContent = joinNames(p.names);
+    r.querySelector('span').textContent = pretty(p.phone);
+    const b = r.querySelector('button');
+    if (tab==='sent') { b.textContent = 'Desmarcar'; b.onclick = () => { delete sent[p.key]; save('tg_sent', sent); stats(); rows(); if(!cur) next(); }; }
+    else { b.textContent = 'Abrir'; b.onclick = () => { delete skipped[p.key]; save('tg_skip', skipped); closeSheets(); next(p); }; }
+    box.appendChild(r);
   });
-  el.querySelector('.sms').addEventListener('click',()=>{location.href=`sms:${e164(p.phone)}&body=${encodeURIComponent(ta.value)}`;setSent(true)});
-  mark.addEventListener('click',()=>setSent(!sent[p.key]));
-  return el;
+  if (items.length > 150) { const m = document.createElement('div'); m.className='hint'; m.textContent = `Mostrando 150 de ${items.length}. Usa el buscador.`; box.appendChild(m); }
 }
+$('testBtn').onclick = () => share({phone: $('testNum').value, key:'test'}, MSG.es(''), false);
+$('resetBtn').onclick = () => { if (confirm('¿Borrar todas las marcas de enviados y saltados?')) { for (const k in sent) delete sent[k]; for (const k in skipped) delete skipped[k]; save('tg_sent', sent); save('tg_skip', skipped); stats(); next(); closeSheets(); } };
 
-function render(){
-  const q=document.getElementById('q').value.trim().toLowerCase(), f=document.getElementById('f').value;
-  const qd=digits(q);
-  const items=people.filter(p=>{
-    if(f==='pend'&&sent[p.key])return false;
-    if(f==='sent'&&!sent[p.key])return false;
-    if(!q)return true;
-    return p.names.join(' ').toLowerCase().includes(q)||(qd&&digits(p.phone).includes(qd));
-  });
-  const list=document.getElementById('list');list.innerHTML='';
-  if(!q)TEST.forEach(t=>list.appendChild(card(t)));
-  items.slice(0,shown).forEach(p=>list.appendChild(card(p)));
-  document.getElementById('more').style.display=items.length>shown?'block':'none';
-  updateCount();
-}
-document.getElementById('q').addEventListener('input',()=>{shown=40;render()});
-document.getElementById('f').addEventListener('change',()=>{shown=40;render()});
-document.getElementById('more').addEventListener('click',()=>{shown+=40;render()});
 loadVideo(); loadClients();
 </script>
 </body>
