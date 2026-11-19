@@ -388,8 +388,8 @@ let gSize = +(localStorage.getItem('tg_gsize') || 20);
 const DAY_LIMIT = 200;
 function groupLang(){ const q = queue(); return q.some(p=>p.lang==='es') ? 'es' : 'en'; }
 function groupList(){ const L = groupLang(); return queue().filter(p=>p.lang===L).slice(0, gSize); }
-const LOCK_TEST = true; // cambiar a false cuando Gabby apruebe
-function testMode(){ return LOCK_TEST || localStorage.getItem('tg_testmode') !== '0'; }
+const LOCK_TEST = false;
+function testMode(){ return localStorage.getItem('tg_testmode2') === '1'; }
 function vidCard(L){
   return `<div class="vid" id="vidCard"><div class="th"><img src="${L==='en'?'ThankYou':'GraciasATi'}_poster.jpg" alt=""></div><div class="tx"><b>${L==='en'?'Video en inglés':'Video en español'}</b>${L==='en'?'“Hi … I just want to say thank you…”':'“Hola … quiero agradecerle por confiar en mí…”'}<br><span>Video + mensaje con el nombre de cada uno</span></div></div>`;
 }
@@ -605,7 +605,7 @@ $('sureYes').onclick = () => { const its = sureItems; closeSheets(); runBatch(it
 $('sureNo').onclick = () => closeSheets();
 /* modo prueba */
 function paintTM(){ const on = testMode(); $('tmBtn').classList.toggle('on', on); $('tmLabel').textContent = on ? 'Encendido' : 'Apagado'; }
-$('tmBtn').onclick = () => { localStorage.setItem('tg_testmode', testMode() ? '0' : '1'); paintTM(); groupView(); };
+$('tmBtn').onclick = () => { localStorage.setItem('tg_testmode2', testMode() ? '0' : '1'); paintTM(); groupView(); };
 paintTM(); if (LOCK_TEST) $('tmBox').style.display = 'none';
 /* sheets + quién */
 (function(){
