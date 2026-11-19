@@ -629,12 +629,18 @@ paintTM(); if (LOCK_TEST) $('tmBox').style.display = 'none';
   const pw = () => document.querySelectorAll('#whoTabs button').forEach(b => b.classList.toggle('on', b.dataset.w === who()));
   document.querySelectorAll('#whoTabs button').forEach(b => b.onclick = () => { localStorage.setItem('tg_who', b.dataset.w); pw(); }); pw();
 })();
-$('pushOld').onclick = () => {
-  if (!sheetUrl()) { toast('Primero pegue el enlace de Google Sheets'); return; }
-  const its = people.filter(p => sent[p.key] && !sent[p.key].remote && !sent[p.key].pushed);
-  if (!its.length) { toast('No hay envíos pendientes por pasar'); return; }
+$('pushOld').onclick = async () => {
+  const url = sheetUrl();
+  if (!url) { toast('Primero pegue el enlace de Google Sheets'); return; }
+  $('pushOld').textContent = 'Revisando la hoja…';
+  let inSheet = new Set(), ok = true;
+  try { const r = await (await fetch(url, {cache:'no-store'})).json(); (r.enviados||[]).forEach(x => inSheet.add(String(x.k).replace(/\D/g,'').slice(-10))); }
+  catch(e){ ok = false; }
+  const its = people.filter(p => sent[p.key] && !inSheet.has(p.key));
+  $('pushOld').textContent = 'Pasar a la hoja los envíos ya hechos en este celular';
+  if (!ok) { toast('No se pudo conectar con la hoja. Revise el enlace.'); return; }
+  if (!its.length) { toast('Todo está al día en la hoja'); return; }
   ['es','en'].forEach(L => { const g = its.filter(p => (p.lang==='en') === (L==='en')); if (g.length) logToSheet(g, L, 'real'); });
-  its.forEach(p => sent[p.key].pushed = 1); save('tg_sent', sent);
   toast(its.length + ' envíos pasados a Google Sheets');
 };
 /* registro CSV */
