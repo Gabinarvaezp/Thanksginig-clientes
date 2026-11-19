@@ -146,7 +146,7 @@ nav button:active{background:#e9e3d8}
       <button class="full" id="testBtn">Enviar prueba</button></div>
     <div class="box"><b>Prueba de envío rápido</b><br>Un número por línea. Puede poner el nombre antes del número. Usa el idioma elegido arriba y no marca a ningún cliente.
       <textarea id="testBatch" class="search" style="margin:10px 0 0;width:100%;min-height:110px;font-size:15px">+57 319 305 9563
-+57 301 691 5294
+Gabby +57 301 691 5294
 Jorgie +1 310 944 0587
 Iliana +1 310 415 6794
 Pao +57 300 645 1663</textarea>
@@ -408,7 +408,7 @@ function runBatch(its, L){
 }
 const selected = new Map();
 function testContacts(){
-  const raw = (localStorage.getItem('tg_testnums2') || $('testBatch').value);
+  const raw = (localStorage.getItem('tg_testnums3') || $('testBatch').value);
   return raw.split(/\n+/).map(x=>x.trim()).filter(x=>digits(x).length>=10).map((x,i)=>{
     const nm = x.replace(/[+\d\s()-]+$/,'').trim();
     const num = x.slice(nm.length).trim();
@@ -461,8 +461,8 @@ $('confYes').onclick = () => {  let pend = JSON.parse(localStorage.getItem('tg_p
 $('confNo').onclick = () => { localStorage.removeItem('tg_pending'); closeSheets(); };
 document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(checkPending, 400); });
 
-try { const tn = localStorage.getItem('tg_testnums2'); if (tn) $('testBatch').value = tn; } catch(e){}
-$('testBatch').addEventListener('input', () => localStorage.setItem('tg_testnums2', $('testBatch').value));
+try { const tn = localStorage.getItem('tg_testnums3'); if (tn) $('testBatch').value = tn; } catch(e){}
+$('testBatch').addEventListener('input', () => localStorage.setItem('tg_testnums3', $('testBatch').value));
 $('testBatchBtn').onclick = () => {
   const tc = testContacts();
   if (!tc.length) { toast('Escribe al menos un número'); return; }
