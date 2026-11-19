@@ -398,7 +398,7 @@ function initials(n){ return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]
 function testView(){
   const stage = $('stage'), items = testContacts();
   let tl = localStorage.getItem('tg_testlang') || 'es';
-  stage.innerHTML = planCard() + `<div class="gcard">
+  stage.innerHTML = `<div class="gcard">
     <div class="eyebrow">Prueba</div>
     <div class="gtitle">Enviar a los números de prueba</div>
     <div class="gsub">Ningún cliente recibe nada mientras esté en modo prueba.</div>
@@ -426,7 +426,7 @@ function groupView(){
   }
   const L = groupLang(), tk = todayKey();
   const today = Object.values(sent).filter(v => v && v.d === tk).length;
-  stage.innerHTML = planCard() + `<div class="gcard">
+  stage.innerHTML = `<div class="gcard">
     <div class="eyebrow">Siguiente grupo · ${L==='en'?'Inglés':'Español'}</div>
     <div class="gtitle">${items.length} clientes listos</div>
     <div class="gsub">Cada uno recibe el video y su mensaje por separado. Toque un nombre para quitarlo.</div>
