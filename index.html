@@ -112,9 +112,11 @@ nav button:active{background:#e9e3d8}
   <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
   <div class="set">
     <div class="box"><b>Cómo funciona</b><br>1. Toca <b>Enviar</b>. El número se copia solo.<br>2. Elige <b>Mensajes</b>. El video y el texto ya van adjuntos.<br>3. En <b>Para:</b> toca y <b>Pegar</b>. Envía.<br>Al volver, pasa solo al siguiente cliente.</div>
-    <div class="box"><b>Video</b><video src="GraciasATi.mp4" controls playsinline preload="metadata"></video></div>
+    <div class="box"><b>Video en español</b><video src="GraciasATi.mp4" controls playsinline preload="metadata"></video></div>
+    <div class="box"><b>Video en inglés</b><video src="ThankYou.mp4" controls playsinline preload="metadata"></video></div>
     <div class="box"><b>Probar con otro número</b><br>Envía el video a cualquier número sin marcar a nadie.
       <input class="search" id="testNum" style="margin:10px 0 0;width:100%" inputmode="tel" placeholder="+57 319 305 9563" value="+57 319 305 9563">
+      <div class="tabs" id="testTabs" style="padding:10px 0 0"><button data-l="es" class="on">Español</button><button data-l="en">Inglés</button></div>
       <button class="full" id="testBtn">Enviar prueba</button></div>
     <div class="box"><b>Atajo para Envío rápido</b><br>En la app Atajos crea uno llamado <b>Gracias Lote</b>:<br>
       1. <b>Obtener archivo</b> GraciasATi.mp4 (carpeta Shortcuts de iCloud), sin selector.<br>
@@ -126,8 +128,8 @@ nav button:active{background:#e9e3d8}
       &nbsp;&nbsp;· <b>Enviar mensaje</b>: Archivo a Numero<br>
       &nbsp;&nbsp;· <b>Enviar mensaje</b>: Mensaje a Numero<br>
       &nbsp;&nbsp;· <b>Esperar</b> 3 segundos<br>
-      En los dos "Enviar mensaje" desactiva <b>Mostrar al ejecutar</b>.
-      <a class="full" style="display:block;text-align:center;text-decoration:none;border-radius:12px;padding:13px;margin-top:10px;background:#fff;color:#1F4A3A;font-weight:600;border:1px solid #E2DCCF" href="GraciasATi.mp4" download>Descargar video para Atajos</a></div>
+      En los dos "Enviar mensaje" desactiva <b>Mostrar al ejecutar</b>.<br>Para inglés: <b>duplica</b> el atajo, llámalo <b>Thanks Lote</b> y cambia el archivo a <b>ThankYou.mp4</b>.
+      <a class="full" style="display:block;text-align:center;text-decoration:none;border-radius:12px;padding:13px;margin-top:10px;background:#fff;color:#1F4A3A;font-weight:600;border:1px solid #E2DCCF" href="GraciasATi.mp4" download>Descargar video en español</a><a class="full" style="display:block;text-align:center;text-decoration:none;border-radius:12px;padding:13px;margin-top:8px;background:#fff;color:#1F4A3A;font-weight:600;border:1px solid #E2DCCF" href="ThankYou.mp4" download>Descargar video en inglés</a></div>
     <div class="box"><b>Volver a empezar</b><br>Borra las marcas de enviados en este teléfono.
       <button class="full ghost" id="resetBtn">Reiniciar progreso</button></div>
   </div>
@@ -135,8 +137,9 @@ nav button:active{background:#e9e3d8}
 <div class="sheet" id="sheetBatch">
   <div class="sheet-h"><h3>Envío rápido</h3><button data-close>Cerrar</button></div>
   <div class="set">
-    <div class="box">Envía el video y el mensaje a varios clientes con un toque, <b>cada uno por separado</b>. Necesita el atajo <b>Gracias Lote</b> en el iPhone (ver Ajustes).
-      <div class="tabs" style="padding:12px 0 0"><button data-n="5">5</button><button data-n="10" class="on">10</button><button data-n="20">20</button></div>
+    <div class="box">Envía el video y el mensaje a varios clientes con un toque, <b>cada uno por separado</b>. Necesita el atajo <b>Gracias Lote</b> (español) y <b>Thanks Lote</b> (inglés) en el iPhone (ver Ajustes).
+      <div class="tabs" id="batchLang" style="padding:12px 0 0"><button data-bl="es" class="on">Español</button><button data-bl="en">Inglés</button></div>
+      <div class="tabs" style="padding:8px 0 0"><button data-n="5">5</button><button data-n="10" class="on">10</button><button data-n="20">20</button></div>
     </div>
     <button class="full" id="batchGo" style="margin:0 0 10px;background:#C43E2A;padding:16px;font-size:16px">Enviar</button>
     <div id="batchRows"></div>
@@ -157,12 +160,12 @@ const MSG = {
   es: (n, pl) => pl
     ? `Hola${n?' '+n:''}, quiero agradecerles por confiar en mí y en mis servicios. Saben que siempre estoy a su servicio para lo que necesiten.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`
     : `Hola${n?' '+n:''}, quiero agradecerle por confiar en mí y en mis servicios. Sabe que siempre estoy a su servicio para lo que necesite.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`,
-  en: (n, pl) => `Hi${n?' '+n:''}, I want to thank you for trusting me and my services. You know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
+  en: (n, pl) => `Hi${n?' '+n:''}, I just want to say thank you${pl?(n.endsWith(' family')?' all':' both'):''} for trusting me and my services. Please know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
 };
 const SEND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>';
 const LS = k => { try { return JSON.parse(localStorage.getItem(k) || '{}') } catch(e){ return {} } };
 const save = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch(e){} };
-let people = [], videoFile = null, cur = null, tab = 'pend';
+let people = [], videoFiles = {}, cur = null, tab = 'pend';
 const sent = LS('tg_sent');
 for (const k in sent) if (typeof sent[k] !== 'object') sent[k] = {t: sent[k] || 0, d: ''};
 const skipped = LS('tg_skip'), edits = LS('tg_edits2');
@@ -225,8 +228,9 @@ async function loadClients(){
   people = [...map.values()].filter(p=>p.ppl&&p.ppl.length).sort((a,b)=>a.names[0].localeCompare(b.names[0]));
   stats(); next();
 }
+const VIDEO = {es:{src:'GraciasATi.mp4', name:'Feliz-Accion-de-Gracias.mp4'}, en:{src:'ThankYou.mp4', name:'Happy-Thanksgiving.mp4'}};
 async function loadVideo(){
-  try { const b = await (await fetch('GraciasATi.mp4')).blob(); videoFile = new File([b], 'Feliz-Accion-de-Gracias.mp4', {type:'video/mp4'}); } catch(e){}
+  for (const l of ['es','en']) { try { const b = await (await fetch(VIDEO[l].src)).blob(); videoFiles[l] = new File([b], VIDEO[l].name, {type:'video/mp4'}); } catch(e){} }
 }
 
 function stats(){
@@ -280,8 +284,9 @@ async function share(p, text, mark){
   const num = e164(p.phone);
   navigator.clipboard.writeText(num).catch(()=>{});
   const chip = $('chip'); if (chip) chip.classList.add('show');
-  if (!videoFile) { toast('El video aún está cargando, intenta en unos segundos'); return; }
-  const data = {files:[videoFile], text};
+  const vf = videoFiles[p.lang === 'en' ? 'en' : 'es'];
+  if (!vf) { toast('El video aún está cargando, intenta en unos segundos'); return; }
+  const data = {files:[vf], text};
   if (!(navigator.canShare && navigator.canShare(data))) { toast('Abre esta página en Safari del iPhone para adjuntar el video'); return; }
   try { await navigator.share(data); if (mark) markSent(p); else toast('Prueba enviada'); }
   catch(e){ if (e.name !== 'AbortError') toast('No se pudo abrir el menú de compartir'); }
@@ -316,25 +321,27 @@ function rows(){
   });
   if (items.length > 150) { const m = document.createElement('div'); m.className='hint'; m.textContent = `Mostrando 150 de ${items.length}. Usa el buscador.`; box.appendChild(m); }
 }
-$('testBtn').onclick = () => share({phone: $('testNum').value, key:'test'}, MSG.es('', false), false);
+$('testBtn').onclick = () => share({phone: $('testNum').value, key:'test', lang: testLang}, MSG[testLang]('', false), false);
 $('resetBtn').onclick = () => { if (confirm('¿Borrar todas las marcas de enviados y saltados?')) { for (const k in sent) delete sent[k]; for (const k in skipped) delete skipped[k]; save('tg_sent', sent); save('tg_skip', skipped); stats(); next(); closeSheets(); } };
 
 /* envío rápido */
-let batchN = 10;
-function batchList(){ return queue().slice(0, batchN); }
+let batchN = 10, batchLang = 'es', testLang = 'es';
+function batchList(){ return queue().filter(p => p.lang === batchLang).slice(0, batchN); }
 function renderBatch(){
   const box = $('batchRows'); box.innerHTML = '';
   const items = batchList();
   items.forEach(p => { const r = document.createElement('div'); r.className = 'r'; r.innerHTML = '<div class="n"><b></b><span></span></div>'; r.querySelector('b').textContent = joinNames(p); r.querySelector('span').textContent = pretty(p.phone); box.appendChild(r); });
   $('batchGo').textContent = items.length ? `Enviar a estos ${items.length}` : 'No hay pendientes';
 }
-document.querySelectorAll('#sheetBatch .tabs button').forEach(b => b.onclick = () => { batchN = +b.dataset.n; document.querySelectorAll('#sheetBatch .tabs button').forEach(x=>x.classList.toggle('on', x===b)); renderBatch(); });
+document.querySelectorAll('#sheetBatch .tabs button[data-n]').forEach(b => b.onclick = () => { batchN = +b.dataset.n; document.querySelectorAll('#sheetBatch .tabs button[data-n]').forEach(x=>x.classList.toggle('on', x===b)); renderBatch(); });
+document.querySelectorAll('#batchLang button').forEach(b => b.onclick = () => { batchLang = b.dataset.bl; document.querySelectorAll('#batchLang button').forEach(x=>x.classList.toggle('on', x===b)); renderBatch(); });
+document.querySelectorAll('#testTabs button').forEach(b => b.onclick = () => { testLang = b.dataset.l; document.querySelectorAll('#testTabs button').forEach(x=>x.classList.toggle('on', x===b)); });
 $('openBatch').onclick = () => { renderBatch(); openSheet('sheetBatch'); };
 $('batchGo').onclick = () => {
   const items = batchList(); if (!items.length) return;
   const payload = items.map(p => e164(p.phone) + '|||' + msgFor(p)).join('@@@');
   save('tg_pending', items.map(p=>p.key));
-  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent('Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
+  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(batchLang === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
 };
 function checkPending(){
   let pend = []; try { pend = JSON.parse(localStorage.getItem('tg_pending') || '[]'); } catch(e){}
