@@ -90,6 +90,17 @@ nav button:active{background:#e9e3d8}
 .big:active{transform:scale(.98)}
 .limit{margin-top:12px;font-size:14px;text-align:center;color:var(--muted)}
 .limit b{color:var(--pine)}
+.r.sel{outline:2px solid var(--pine)}
+.ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:800}
+.r.sel .ck,.names div.sel .ck{background:var(--pine);border-color:var(--pine)}
+.r .n{cursor:pointer}
+.selbar{display:none;gap:8px;padding:10px 18px calc(env(safe-area-inset-bottom) + 12px);background:var(--paper);border-top:1px solid var(--line)}
+.selbar.show{display:flex}
+.selbar button{border:0;border-radius:14px;padding:16px;font:inherit;font-weight:800;font-size:16px}
+.selbar .go{flex:1;background:var(--tomato);color:#fff}.selbar .clr{background:#fff;color:var(--pine)}
+.names div{align-items:center;cursor:pointer}
+.names div .nm{flex:1;min-width:0}
+.names div:not(.sel){opacity:.45}
 .loading{text-align:center;color:var(--muted);padding:60px 0}
 </style>
 </head>
@@ -109,16 +120,17 @@ nav button:active{background:#e9e3d8}
 
 <nav>
   <button id="goGroup">Inicio</button>
-  <button id="openList">Buscar cliente</button>
+  <button id="openList">Elegir clientes</button>
   <button id="openSet">Ajustes</button>
 </nav>
 
 <div class="sheet-bg" id="bg"></div>
 <div class="sheet" id="sheetList">
   <div class="sheet-h"><h3 id="listTitle">Clientes</h3><button data-close>Cerrar</button></div>
-  <div class="tabs"><button data-t="pend" class="on">Pendientes</button><button data-t="sent">Enviados</button><button data-t="skip">Saltados</button></div>
+  <div class="tabs" id="listTabs"><button data-t="pend" class="on">Pendientes</button><button data-t="test">Pruebas</button><button data-t="sent">Enviados</button></div>
   <input class="search" id="q" type="search" placeholder="Buscar nombre o teléfono">
   <div class="rows" id="rows"></div>
+  <div class="selbar" id="selbar"><button class="clr" id="selClear">Quitar</button><button class="go" id="selGo">Enviar</button></div>
 </div>
 <div class="sheet" id="sheetSet">
   <div class="sheet-h"><h3>Ajustes</h3><button data-close>Cerrar</button></div>
@@ -271,7 +283,7 @@ function groupView(){
   const stage = $('stage'), items = groupList();
   if (!items.length) {
     const sk = people.filter(p=>!sent[p.key] && skipped[p.key]).length;
-    stage.innerHTML = `<div class="done"><h2>¡Listo, todos enviados!</h2><p>${sk ? sk + ' clientes saltados quedan en Buscar cliente.' : 'Feliz Día de Acción de Gracias.'}</p></div>`;
+    stage.innerHTML = `<div class="done"><h2>¡Listo, todos enviados!</h2><p>${sk ? sk + ' clientes saltados quedan en Elegir clientes.' : 'Feliz Día de Acción de Gracias.'}</p></div>`;
     return;
   }
   const L = groupLang(), tk = todayKey();
@@ -279,22 +291,23 @@ function groupView(){
   stage.innerHTML = `<div class="gcard">
     <div class="eyebrow">Siguiente grupo · ${L==='en'?'Inglés':'Español'}</div>
     <div class="gtitle">${items.length} clientes listos</div>
-    <div class="gsub">Cada uno recibe el video y su mensaje por separado.</div>
+    <div class="gsub">Cada uno recibe el video y su mensaje por separado. Toque un nombre para quitarlo.</div>
     <div class="size"><button data-g="10">10</button><button data-g="20">20</button></div>
     <div class="names" id="gnames"></div>
     <button class="big" id="gGo">Enviar a estos ${items.length}</button>
     <div class="limit">Hoy lleva <b>${today}</b> de ${DAY_LIMIT} recomendados</div>
   </div>`;
   const box = $('gnames');
-  items.forEach(p => { const r = document.createElement('div'); r.innerHTML = '<span></span><span></span>'; r.children[0].textContent = [...new Set(p.full)].join(' y '); r.children[1].textContent = pretty(p.phone); box.appendChild(r); });
+  const off = new Set();
+  const paintGo = () => { const n = items.length - off.size; $('gGo').textContent = n ? `Enviar a estos ${n}` : 'Elija al menos uno'; $('gGo').disabled = !n; };
+  items.forEach(p => { const r = document.createElement('div'); r.className = 'sel'; r.innerHTML = '<span class="ck">✓</span><span class="nm"></span><span></span>'; r.children[1].textContent = [...new Set(p.full)].join(' y '); r.children[2].textContent = pretty(p.phone);
+    r.onclick = () => { if (off.has(p.key)) off.delete(p.key); else off.add(p.key); r.classList.toggle('sel', !off.has(p.key)); paintGo(); }; box.appendChild(r); });
   stage.querySelectorAll('.size button').forEach(b => { b.classList.toggle('on', +b.dataset.g === gSize); b.onclick = () => { gSize = +b.dataset.g; localStorage.setItem('tg_gsize', gSize); groupView(); }; });
   $('gGo').onclick = () => {
     if (today >= DAY_LIMIT && !confirm('Ya envió ' + today + ' hoy. Es mejor seguir mañana para no ser marcado como spam. ¿Enviar de todas formas?')) return;
-    const its = groupList();
-    const payload = its.map(p => e164(p.phone) + '|||' + msgFor(p)).join('@@@');
-    save('tg_pending', its.map(p=>p.key));
-    location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(L === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
+    runBatch(items.filter(p => !off.has(p.key)), L);
   };
+  paintGo();
 }
 function next(pick){
   if (!pick) return groupView();
@@ -354,30 +367,64 @@ function closeSheets(){ $('bg').classList.remove('open'); document.querySelector
 $('bg').onclick = closeSheets; document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
 $('openList').onclick = () => { setTab('pend'); openSheet('sheetList'); };
 $('openSet').onclick = () => openSheet('sheetSet');
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.t));
+document.querySelectorAll('#listTabs button').forEach(b => b.onclick = () => setTab(b.dataset.t));
 $('q').addEventListener('input', rows);
-function setTab(t){ tab = t; document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.t===t)); $('q').value=''; rows(); }
+function setTab(t){ tab = t; document.querySelectorAll('#listTabs button').forEach(b=>b.classList.toggle('on', b.dataset.t===t)); $('q').value=''; rows(); }
 function rows(){
   const q = $('q').value.trim().toLowerCase(), qd = digits(q);
-  let items = people.filter(p => tab==='sent' ? sent[p.key] : tab==='skip' ? (!sent[p.key] && skipped[p.key]) : (!sent[p.key] && !skipped[p.key]));
+  let items = tab==='test' ? testContacts() : people.filter(p => tab==='sent' ? sent[p.key] : !sent[p.key]);
   if (q) items = items.filter(p => p.full.join(' ').toLowerCase().includes(q) || (qd && digits(p.phone).includes(qd)));
   if (tab==='sent') items.sort((a,b)=>sent[b.key].t - sent[a.key].t);
-  $('listTitle').textContent = (tab==='sent'?'Enviados':tab==='skip'?'Saltados':'Pendientes') + ' · ' + items.length;
+  $('listTitle').textContent = (tab==='sent'?'Enviados':tab==='test'?'Números de prueba':'Elegir clientes') + ' · ' + items.length;
   const box = $('rows'); box.innerHTML = '';
+  if (tab==='test') { const h = document.createElement('div'); h.className='hint'; h.style.margin='0 0 10px'; h.textContent = 'Solo para probar, no marcan a ningún cliente. Toque los que quiera y luego Enviar. Se cambian en Ajustes.'; box.appendChild(h); }
+  if (tab==='pend' && !q) { const h = document.createElement('div'); h.className='hint'; h.style.margin='0 0 10px'; h.textContent = 'Toque los nombres para elegirlos y luego Enviar.'; box.appendChild(h); }
   items.slice(0, 150).forEach(p => {
-    const r = document.createElement('div'); r.className = 'r';
-    r.innerHTML = `${tab==='sent'?'<div class="ok">✓</div>':''}<div class="n"><b></b><span></span></div><button></button>`;
-    r.querySelector('b').textContent = joinNames(p);
-    r.querySelector('span').textContent = pretty(p.phone);
+    const r = document.createElement('div'); r.className = 'r' + (selected.has(p.key) ? ' sel' : '');
+    r.innerHTML = `${tab==='sent'?'<div class="ok">✓</div>':'<span class="ck">✓</span>'}<div class="n"><b></b><span></span></div><button></button>`;
+    r.querySelector('b').textContent = p.test ? p.full[0] : [...new Set(p.full)].join(' y ');
+    r.querySelector('.n span').textContent = pretty(p.phone) + (p.lang==='en' ? ' · Inglés' : '');
     const b = r.querySelector('button');
-    if (tab==='sent') { b.textContent = 'Desmarcar'; b.onclick = () => { delete sent[p.key]; save('tg_sent', sent); stats(); rows(); if(!cur) next(); }; }
-    else { b.textContent = 'Abrir'; b.onclick = () => { delete skipped[p.key]; save('tg_skip', skipped); closeSheets(); next(p); }; }
+    if (tab==='sent') { b.textContent = 'Desmarcar'; b.onclick = () => { delete sent[p.key]; save('tg_sent', sent); stats(); rows(); }; }
+    else {
+      if (p.test) b.remove(); else { b.textContent = 'Ver'; b.onclick = (e) => { e.stopPropagation(); closeSheets(); next(p); }; }
+      r.onclick = () => { if (selected.has(p.key)) selected.delete(p.key); else selected.set(p.key, p); r.classList.toggle('sel', selected.has(p.key)); paintSel(); };
+    }
     box.appendChild(r);
   });
-  if (items.length > 150) { const m = document.createElement('div'); m.className='hint'; m.textContent = `Mostrando 150 de ${items.length}. Usa el buscador.`; box.appendChild(m); }
+  if (items.length > 150) { const m = document.createElement('div'); m.className='hint'; m.textContent = `Mostrando 150 de ${items.length}. Use el buscador.`; box.appendChild(m); }
+  paintSel();
 }
 $('testBtn').onclick = () => share({phone: $('testNum').value, key:'test', lang: testLang}, MSG[testLang]('', false), false);
 $('resetBtn').onclick = () => { if (confirm('¿Borrar todas las marcas de enviados y saltados?')) { for (const k in sent) delete sent[k]; for (const k in skipped) delete skipped[k]; save('tg_sent', sent); save('tg_skip', skipped); stats(); next(); closeSheets(); } };
+
+/* envío por lote y selección */
+function runBatch(its, L){
+  if (!its.length) return;
+  const payload = its.map(p => e164(p.phone) + '|||' + (p.test ? MSG[L]('', false) : msgFor(p))).join('@@@');
+  save('tg_pending', its.filter(p=>!p.test).map(p=>p.key));
+  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(L === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
+}
+const selected = new Map();
+function testContacts(){
+  const raw = (localStorage.getItem('tg_testnums') || $('testBatch').value);
+  return raw.split(/\n+/).map(x=>x.trim()).filter(x=>digits(x).length>=10).map((x,i)=>({key:'t'+digits(x), names:['Prueba'], full:['Prueba '+(i+1)], ppl:[{first:'Prueba',full:'Prueba'}], phone:x, lang:'es', test:true}));
+}
+function paintSel(){
+  const n = selected.size, bar = $('selbar');
+  bar.classList.toggle('show', n > 0);
+  const es = [...selected.values()].filter(p=>p.lang!=='en').length, en = n - es;
+  $('selGo').textContent = es && en ? `Enviar ${es} en español` : `Enviar a ${n} seleccionado${n===1?'':'s'}`;
+}
+$('selClear').onclick = () => { selected.clear(); paintSel(); rows(); };
+$('selGo').onclick = () => {
+  const all = [...selected.values()];
+  const L = all.some(p=>p.lang!=='en') ? 'es' : 'en';
+  const its = all.filter(p => (p.lang==='en') === (L==='en'));
+  its.forEach(p => selected.delete(p.key));
+  if (selected.size) toast(`Después envíe los ${selected.size} en inglés`);
+  closeSheets(); runBatch(its, L);
+};
 
 /* envío rápido */
 let batchN = 10, batchLang = 'es', testLang = 'es';
@@ -409,6 +456,8 @@ $('confYes').onclick = () => {  let pend = JSON.parse(localStorage.getItem('tg_p
 $('confNo').onclick = () => { localStorage.removeItem('tg_pending'); closeSheets(); };
 document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(checkPending, 400); });
 
+try { const tn = localStorage.getItem('tg_testnums'); if (tn) $('testBatch').value = tn; } catch(e){}
+$('testBatch').addEventListener('input', () => localStorage.setItem('tg_testnums', $('testBatch').value));
 $('testBatchBtn').onclick = () => {
   const nums = $('testBatch').value.split(/\n+/).map(x=>x.trim()).filter(x=>digits(x).length>=10).map(x=>'+'+digits(x));
   if (!nums.length) { toast('Escribe al menos un número'); return; }
