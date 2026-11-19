@@ -144,11 +144,12 @@ nav button:active{background:#e9e3d8}
       <input class="search" id="testNum" style="margin:10px 0 0;width:100%" inputmode="tel" placeholder="+57 319 305 9563" value="+57 319 305 9563">
       <div class="tabs" id="testTabs" style="padding:10px 0 0"><button data-l="es" class="on">Español</button><button data-l="en">Inglés</button></div>
       <button class="full" id="testBtn">Enviar prueba</button></div>
-    <div class="box"><b>Prueba de envío rápido</b><br>Un número por línea. Usa el idioma elegido arriba y no marca a ningún cliente.
+    <div class="box"><b>Prueba de envío rápido</b><br>Un número por línea. Puede poner el nombre antes del número. Usa el idioma elegido arriba y no marca a ningún cliente.
       <textarea id="testBatch" class="search" style="margin:10px 0 0;width:100%;min-height:110px;font-size:15px">+57 319 305 9563
 +57 301 691 5294
-+57 300 847 9734
-+57 320 990 0746</textarea>
+Jorgie +1 310 944 0587
+Iliana +1 310 415 6794
+Pao +57 300 645 1663</textarea>
       <button class="full" id="testBatchBtn">Probar envío rápido</button></div>
     <div class="box"><b>Atajo para Envío rápido</b><br>En la app Atajos crea uno llamado <b>Gracias Lote</b>:<br>
       1. <b>Obtener archivo</b> GraciasATi.mp4 (carpeta Shortcuts de iCloud), sin selector.<br>
@@ -401,14 +402,18 @@ $('resetBtn').onclick = () => { if (confirm('¿Borrar todas las marcas de enviad
 /* envío por lote y selección */
 function runBatch(its, L){
   if (!its.length) return;
-  const payload = its.map(p => e164(p.phone) + '|||' + (p.test ? MSG[L]('', false) : msgFor(p))).join('@@@');
+  const payload = its.map(p => e164(p.phone) + '|||' + (p.test ? MSG[L](p.tname||'', false) : msgFor(p))).join('@@@');
   save('tg_pending', its.filter(p=>!p.test).map(p=>p.key));
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(L === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
 }
 const selected = new Map();
 function testContacts(){
-  const raw = (localStorage.getItem('tg_testnums') || $('testBatch').value);
-  return raw.split(/\n+/).map(x=>x.trim()).filter(x=>digits(x).length>=10).map((x,i)=>({key:'t'+digits(x), names:['Prueba'], full:['Prueba '+(i+1)], ppl:[{first:'Prueba',full:'Prueba'}], phone:x, lang:'es', test:true}));
+  const raw = (localStorage.getItem('tg_testnums2') || $('testBatch').value);
+  return raw.split(/\n+/).map(x=>x.trim()).filter(x=>digits(x).length>=10).map((x,i)=>{
+    const nm = x.replace(/[+\d\s()-]+$/,'').trim();
+    const num = x.slice(nm.length).trim();
+    return {key:'t'+digits(num), names:[nm||'Prueba'], full:[nm||('Prueba '+(i+1))], ppl:[{first:nm,full:nm}], phone:num, lang:'es', test:true, tname:nm};
+  });
 }
 function paintSel(){
   const n = selected.size, bar = $('selbar');
@@ -456,12 +461,12 @@ $('confYes').onclick = () => {  let pend = JSON.parse(localStorage.getItem('tg_p
 $('confNo').onclick = () => { localStorage.removeItem('tg_pending'); closeSheets(); };
 document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(checkPending, 400); });
 
-try { const tn = localStorage.getItem('tg_testnums'); if (tn) $('testBatch').value = tn; } catch(e){}
-$('testBatch').addEventListener('input', () => localStorage.setItem('tg_testnums', $('testBatch').value));
+try { const tn = localStorage.getItem('tg_testnums2'); if (tn) $('testBatch').value = tn; } catch(e){}
+$('testBatch').addEventListener('input', () => localStorage.setItem('tg_testnums2', $('testBatch').value));
 $('testBatchBtn').onclick = () => {
-  const nums = $('testBatch').value.split(/\n+/).map(x=>x.trim()).filter(x=>digits(x).length>=10).map(x=>'+'+digits(x));
-  if (!nums.length) { toast('Escribe al menos un número'); return; }
-  const payload = nums.map(n => n + '|||' + MSG[testLang]('', false)).join('@@@');
+  const tc = testContacts();
+  if (!tc.length) { toast('Escribe al menos un número'); return; }
+  const payload = tc.map(p => e164(p.phone) + '|||' + MSG[testLang](p.tname||'', false)).join('@@@');
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(testLang === 'en' ? 'Thanks Lote' : 'Gracias Lote') + '&input=text&text=' + encodeURIComponent(payload);
 };
 
