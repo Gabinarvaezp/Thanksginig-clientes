@@ -385,7 +385,7 @@ function stats(){
 }
 function queue(){ return people.filter(p => !sent[p.key] && !skipped[p.key]); }
 
-let gSize = 21;
+let gSize = 25;
 const DAY_LIMIT = 200;
 function groupLang(){ const q = queue(); return q.some(p=>p.lang==='es') ? 'es' : 'en'; }
 function groupList(){ const L = groupLang(); return queue().filter(p=>p.lang===L).slice(0, gSize); }
@@ -415,7 +415,7 @@ function testView(){
   $('gGo').onclick = () => runBatch(items.filter(p => !off.has(p.key)), tl);
   paintGo();
 }
-function groupNum(){ const n = people.filter(p=>sent[p.key]).length; if (n < 20) return 1; if (n < 50) return 2; if (n < 70) return 3; return 4 + Math.floor((n - 70) / 21); }
+function groupNum(){ const n = people.filter(p=>sent[p.key]).length; if (n < 20) return 1; if (n < 50) return 2; if (n < 70) return 3; return 4 + Math.floor((n - 70) / 25); }
 function groupView(){
   cur = null;
   if (testMode()) return testView();
