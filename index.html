@@ -350,6 +350,20 @@ function toast(txt, undo){
   $('toast').classList.add('show'); clearTimeout(tTimer); tTimer = setTimeout(()=>$('toast').classList.remove('show'), undo ? 5000 : 3200);
 }
 
+function ageOf(b){ const m = String(b||'').match(/(\d{4})-(\d{2})-(\d{2})/); if (!m) return 0; const d = new Date(+m[1], +m[2]-1, +m[3]), n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a > 0 && a < 110 ? a : 0; }
+/* prioridad: mayores de 50, mejores clientes y con potencial de recompra */
+function priority(p){
+  const ages = p.ages || [], maxA = ages.length ? Math.max(...ages) : 0, minA = ages.length ? Math.min(...ages) : 0;
+  let s = 0;
+  if (maxA >= 50) s += 30;                                   // mayores de 50
+  if (minA >= 50 && minA <= 80) s += 15;                     // edad para comprar otra póliza
+  s += Math.min(25, (p.prem || 0) / 6);                      // mejores: prima mensual
+  s += Math.min(10, (p.cov || 0) / 2500);                    // mejores: cobertura
+  if ((p.nPol || 0) >= 2) s += 10;                           // ya ha comprado más de una
+  if ((p.cov || 0) > 0 && (p.cov || 0) <= 10000 && minA >= 50 && minA <= 80) s += 15; // cobertura baja: puede recomprar
+  if (p.ppl.length > 1) s += 5;                              // pareja o familia
+  return Math.round(s);
+}
 async function loadClients(){
   let list = null;
   try { const raw = localStorage.getItem('clients'); if (raw) list = JSON.parse(raw); } catch(e){}
@@ -367,8 +381,12 @@ async function loadClients(){
     if (!map.has(k)) map.set(k, {key:k, names:[], full:[], phone:c.phone, lang: c.lang === 'en' ? 'en' : 'es'});
     const p = map.get(k); const fn = cap((c.name||'').trim().replace(/\s+/g,' '));
     p.ppl = p.ppl || []; if (fn && !p.ppl.some(x=>x.full.toLowerCase()===fn.toLowerCase())) { p.ppl.push({first:first(fn), full:fn}); p.names.push(first(fn)); p.full.push(fn); }
+    const age = ageOf(c.birth); if (age) p.ages = (p.ages || []).concat(age);
+    (c.policies || []).forEach(pol => { p.nPol = (p.nPol||0) + 1; p.cov = (p.cov||0) + (+pol.coverage||0); p.prem = (p.prem||0) + (+pol.premium||0); });
   });
-  people = [...map.values()].filter(p=>p.ppl&&p.ppl.length).sort((a,b)=>a.names[0].localeCompare(b.names[0]));
+  people = [...map.values()].filter(p=>p.ppl&&p.ppl.length);
+  people.forEach(p => p.score = priority(p));
+  people.sort((a,b) => (b.score - a.score) || a.names[0].localeCompare(b.names[0]));
   stats(); next();
 }
 const VIDEO = {es:{src:'GraciasATi.mp4', name:'Feliz-Accion-de-Gracias.mp4'}, en:{src:'ThankYou.mp4', name:'Happy-Thanksgiving.mp4'}};
