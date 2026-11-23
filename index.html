@@ -414,7 +414,7 @@ function stats(){
 }
 function queue(){ return people.filter(p => !sent[p.key] && !skipped[p.key]); }
 
-let gSize = 30;
+let gSize = 28;
 const DAY_LIMIT = 200;
 function groupLang(){ const q = queue(); return q.some(p=>p.lang==='es') ? 'es' : 'en'; }
 function groupList(){ const L = groupLang(); return queue().filter(p=>p.lang===L).slice(0, gSize); }
