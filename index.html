@@ -459,7 +459,8 @@ function celebra(sk){
     <div class="num">${n.toLocaleString('en-US')}</div>
     <p class="big1">familias recibieron <b>tu mensaje de gracias</b>.</p>
     <div class="tg">¡Feliz Día de Acción de Gracias!</div>
-    <div class="firma"><small>Con amor,</small>Gabby</div>
+    <div class="firma"><small>Un abrazo,</small>Gabby</div>
+    <a href="LoLograste.mp4" style="position:relative;z-index:1;display:inline-block;margin-top:22px;background:#C9A24A;color:#1F4A3A;font-weight:800;font-size:17px;padding:14px 24px;border-radius:999px;text-decoration:none">Ver tu video especial</a>
   </div>${sk ? `<p style="text-align:center;color:var(--muted)">${sk} clientes saltados quedan en Elegir clientes.</p>` : ''}`;
 }
 function groupNum(){ const n = people.filter(p=>sent[p.key]).length; if (n < 20) return 1; if (n < 50) return 2; if (n < 70) return 3; return 4 + Math.floor((n - 70) / 26); }
