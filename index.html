@@ -592,8 +592,8 @@ $('testBtn').onclick = () => share({phone: $('testNum').value, key:'test', lang:
 $('resetBtn').onclick = () => { if (confirm('¿Borrar todas las marcas de enviados y saltados?')) { for (const k in sent) delete sent[k]; for (const k in skipped) delete skipped[k]; save('tg_sent', sent); save('tg_skip', skipped); stats(); next(); closeSheets(); } };
 
 /* envío por lote y selección */
-const SHEET_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyt8FLotQa2hzE4PbImjGyJXP5_WWogRysod2i7kE8lY5lOGqUuAHPxV2jscVq6NeEL/exec';
-function sheetUrl(){ return (localStorage.getItem('tg_sheet') || SHEET_URL_DEFAULT).trim(); }
+const SHEET_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbye2nneDpTzOOzo2VUk68nnh8qj3JEVsuEfGTKIi_qRvFNd0eF565JCGwRDD0DRED08/exec';
+function sheetUrl(){ const s = (localStorage.getItem('tg_sheet') || '').trim(); return (!s || s.includes('AKfycbyt8FLo')) ? SHEET_URL_DEFAULT : s; }
 function who(){ return localStorage.getItem('tg_who') || 'Jorge'; }
 function logToSheet(its, L, mode){
   const url = sheetUrl(); if (!url) return;
