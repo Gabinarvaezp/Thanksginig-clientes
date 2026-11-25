@@ -386,7 +386,9 @@ async function loadClients(){
     } catch(e){}
   }
   const map = new Map();
+  const PHONE_FIX = { c1116: '(310)944-0589' };
   (list || []).forEach(c => {
+    if (PHONE_FIX[c.id]) c = Object.assign({}, c, { phone: PHONE_FIX[c.id] });
     const d = digits(c.phone); if (d.length < 10) return;
     const k = d.slice(-10);
     if (!map.has(k)) map.set(k, {key:k, names:[], full:[], phone:c.phone, lang: c.lang === 'en' ? 'en' : 'es'});
