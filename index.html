@@ -314,7 +314,7 @@ const MSG = {
   es: (n, pl) => pl
     ? `Hola${n?' '+n:''}, quiero agradecerles por confiar en mí y en mis servicios. Saben que siempre estoy a su servicio para lo que necesiten.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`
     : `Hola${n?' '+n:''}, quiero agradecerle por confiar en mí y en mis servicios. Sabe que siempre estoy a su servicio para lo que necesite.\n\n¡Feliz Día de Acción de Gracias!\n\nCon cariño,\nAgente Jorge Martínez`,
-  en: (n, pl) => `Hi${n?' '+n:''}, I just want to say thank you${pl?(n.endsWith(' family')?' all':' both'):''} for trusting me and my services. Please know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWith love,\nAgent Jorge Martínez`
+  en: (n, pl) => `Hi${n?' '+n:''}, I just want to say thank you${pl?(n.endsWith(' family')?' all':' both'):''} for trusting me and my services. Please know I'm always here for whatever you need.\n\nHappy Thanksgiving!\n\nWarmly,\nAgent Jorge Martínez`
 };
 const SEND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>';
 const LS = k => { try { return JSON.parse(localStorage.getItem(k) || '{}') } catch(e){ return {} } };
